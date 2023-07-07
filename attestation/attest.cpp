@@ -21,10 +21,9 @@ using namespace Azure::Security::Attestation;
 using namespace Azure::Security::Attestation::Models;
 
 // The following must be set before calling send_to_att_service().
-std::string get_tenant_id() { return get_env_var("AZURE_TENANT_ID"); } // Tenant ID for the Azure account.
-std::string get_client_id() { return get_env_var("AZURE_CLIENT_ID"); } // The Client ID to authenticate the request.
-std::string get_client_secret() { return get_env_var("AZURE_CLIENT_SECRET"); } // The client secret.
-std::string get_maa_provider_uri() { return get_env_var("AZURE_MAA_URI"); } // Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
+std::string get_tenant_id() { return "72f988bf-86f1-41af-91ab-2d7cd011db47"; } // Tenant ID for the Azure account.
+std::string get_client_id() { return "5a1b7ae3-5c9e-4e9b-8081-264ad141b9bf"; } // The Client ID to authenticate the request.
+std::string get_maa_provider_uri() { return "https://attestationdiagnosticeus.eus.attest.azure.net"; } // Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
 
 void exit_if_failed(const att_result result, const string& function_name)
 {
@@ -39,14 +38,12 @@ vector<uint8_t> send_to_att_service(const uint8_t* data, size_t size)
 {
     try
     {
-        //
-        // This sample gets a credential using a secret. See https://github.com/Azure/azure-sdk-for-cpp/tree/main/sdk/identity/azure-identity/samples for how to get other types of credentials.
-        //
-        auto client_secret_cred = make_shared<Azure::Identity::ClientSecretCredential>(get_tenant_id(), get_client_id(), get_client_secret());
 
-        auto att_client = AttestationClient::Create(get_maa_provider_uri(), client_secret_cred);
+        auto att_client = AttestationClient::Create(get_maa_provider_uri());
 
         auto response = att_client.AttestTpm(vector<uint8_t>(data, data + size));
+
+        std::cout << "Attestation Request " << response.RawResponse.get()->GetHeaders().at("x-ms-request-id") << " at " << response.RawResponse.get()->GetHeaders().at("date") << std::endl;
 
         return response.Value.TpmResult;
     }
