@@ -21,7 +21,7 @@ using namespace Azure::Security::Attestation;
 using namespace Azure::Security::Attestation::Models;
 
 // The following must be set before calling send_to_att_service().
-std::string get_maa_provider_uri() { return get_env_var("AZURE_TENANT_ID", "https://attestationdiagnosticeus.eus.attest.azure.net"); } // Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
+std::string get_maa_provider_uri() { return get_env_var("AZURE_MAA_URI", "https://attestationdiagnosticeus.eus.attest.azure.net"); } // Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
 std::string get_noauth() { return get_env_var("NO_AUTH", "true"); } // Define whther endpoint can use no auth, default true
 
 // The following must be set before calling send_to_att_service() if endpoint requires authentication
