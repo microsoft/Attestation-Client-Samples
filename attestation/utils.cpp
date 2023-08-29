@@ -65,25 +65,3 @@ std::string get_env_var(const std::string& env)
 
     return val;
 }
-
-std::string get_env_var(const std::string& env, const std::string def)
-{
-    // Get length of env value.
-    size_t len = 0;
-    if (getenv_s(&len, nullptr, 0, env.c_str()) || len == 0)
-    {
-        return def;
-    }
-
-    // Allocate using a string and get the value.
-    std::string val(len, 0);
-    if (getenv_s(&len, val.data(), val.size(), env.c_str()) || len == 0)
-    {
-        throw std::runtime_error("Could not read environment variable: '" + std::string(env) + "'");
-    }
-
-    // Remove last character of the string as getenv_s() stores null terminator.
-    val.erase(val.end() - 1);
-
-    return val;
-}

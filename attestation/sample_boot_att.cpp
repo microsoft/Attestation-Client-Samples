@@ -12,7 +12,6 @@
  * - AZURE_CLIENT_ID:     The client ID to authenticate the request. Used for authenticated calls to the attestation service.
  * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
- * - NO_AUTH:             Disable No auth
  * 
  * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
  * 
