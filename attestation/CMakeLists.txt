@@ -34,3 +34,4 @@ endmacro()
 
 define_sample(sample_boot_att)
 define_sample(sample_tpm_key_att)
+define_sample(sample_vbs_ncrypt_att)
