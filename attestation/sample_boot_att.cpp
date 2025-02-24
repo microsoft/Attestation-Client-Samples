@@ -30,7 +30,73 @@
 
 using namespace std;
 
-#define AIK_NAME L"att_sample_aik"
+#define AIK_NAME L"att_sample_aik_test"
+
+
+wil::unique_ncrypt_key CreateKey(PCWSTR providerName, PCWSTR keyName, DWORD flags, bool finalize)
+{
+    wil::unique_ncrypt_prov provHandle{};
+    THROW_IF_FAILED_MSG(NCryptOpenStorageProvider(
+        &provHandle,
+        providerName,
+        0), "NCryptOpenStorageProvider failed.");
+
+    wil::unique_ncrypt_key key{};
+    THROW_IF_FAILED_MSG(NCryptCreatePersistedKey(
+        provHandle.get(),
+        &key,
+        BCRYPT_RSA_ALGORITHM,
+        keyName,
+        0,
+        flags), "NCryptCreatePersistedKey failed.");
+
+    DWORD keyLength = 2048;
+    THROW_IF_FAILED_MSG(NCryptSetProperty(
+        key.get(),
+        NCRYPT_LENGTH_PROPERTY,
+        (PBYTE)&keyLength,
+        sizeof(keyLength),
+        0), "NCryptSetProperty for key length failed.");
+
+    SECURITY_DESCRIPTOR secDescr{};
+    if (!InitializeSecurityDescriptor(&secDescr, SECURITY_DESCRIPTOR_REVISION))
+    {
+        wcout << L"InitializeSecurityDescriptor error: " << GetLastError();
+        THROW_WIN32(GetLastError());
+    }
+
+    THROW_IF_FAILED_MSG(NCryptSetProperty(
+        key.get(),
+        NCRYPT_SECURITY_DESCR_PROPERTY,
+        (PBYTE)&secDescr,
+        sizeof(secDescr),
+        DACL_SECURITY_INFORMATION), "NCryptSetProperty for security descriptor failed.");
+
+    if (finalize)
+    {
+        THROW_IF_FAILED_MSG(NCryptFinalizeKey(key.get(), 0), "NCryptFinalizeKey failed.");
+    }
+
+    return key;
+}
+
+
+wil::unique_ncrypt_key _CreateAik(PCWSTR aikName)
+{
+    auto aik = CreateKey(MS_PLATFORM_KEY_STORAGE_PROVIDER, aikName, NCRYPT_OVERWRITE_KEY_FLAG | NCRYPT_MACHINE_KEY_FLAG, false);
+
+    DWORD keyUsage = NCRYPT_PCP_IDENTITY_KEY;
+    THROW_IF_FAILED(NCryptSetProperty(
+        aik.get(),
+        NCRYPT_PCP_KEY_USAGE_POLICY_PROPERTY,
+        (PBYTE)&keyUsage,
+        sizeof(keyUsage),
+        0));
+
+    THROW_IF_FAILED(NCryptFinalizeKey(aik.get(), 0));
+
+    return aik;
+}
 
 int main()
 {
@@ -41,6 +107,10 @@ int main()
 
     try
     {
+        cout << "Attempting to genrerate the AIK Key" << endl;
+        _CreateAik(AIK_NAME);
+        cout << "Genrerated Key" << endl;
+
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());

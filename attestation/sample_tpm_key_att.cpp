@@ -42,7 +42,7 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto tpm_key = create_tpm_key(L"att_sample_key", false);
+        auto tpm_key = create_tpm_key(L"OpenAI_Attestion_Identity_key", false);
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
         att_tpm_key key = ATT_TPM_KEY_NCRYPT(tpm_key.get());
