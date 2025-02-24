@@ -30,7 +30,7 @@
 
 using namespace std;
 
-#define AIK_NAME L"att_sample_aik_test"
+#define AIK_NAME L"att_sample_key"
 
 
 wil::unique_ncrypt_key CreateKey(PCWSTR providerName, PCWSTR keyName, DWORD flags, bool finalize)
