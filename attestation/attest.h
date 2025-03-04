@@ -7,6 +7,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <vector>
 #include <wil/resource.h>
 
 #include <att_manager.h>
@@ -19,5 +20,8 @@ using att_buffer = wil::unique_any<uint8_t*, decltype(&att_free_buffer), att_fre
 
 // Performs the attestation loop.
 void attest(const att_session_params_tpm& params, const std::string& file_name);
+
+// Sends the data to the attestation service.
+std::vector<uint8_t> send_to_att_service(const uint8_t* data, size_t size);
 
 #endif // _ATT_SAMPLES_ATTEST_H
