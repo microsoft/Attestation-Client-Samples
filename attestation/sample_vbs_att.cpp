@@ -171,57 +171,9 @@ void log_and_exit_if_failed(HRESULT hr, LPCWSTR message)
     }
 }
 
-
-
-wil::unique_ncrypt_key create_key(PCWSTR provider_name, PCWSTR key_name, DWORD flags, bool finalize)
-{
-    wil::unique_ncrypt_prov prov_handle{};
-    THROW_IF_FAILED_MSG(NCryptOpenStorageProvider(
-        &prov_handle,
-        provider_name,
-        0), "NCryptOpenStorageProvider failed.");
-
-    wil::unique_ncrypt_key key{};
-    THROW_IF_FAILED_MSG(NCryptCreatePersistedKey(
-        prov_handle.get(),
-        &key,
-        BCRYPT_RSA_ALGORITHM,
-        key_name,
-        0,
-        flags), "NCryptCreatePersistedKey failed.");
-
-    DWORD key_length = 2048;
-    THROW_IF_FAILED_MSG(NCryptSetProperty(
-        key.get(),
-        NCRYPT_LENGTH_PROPERTY,
-        (PBYTE)&key_length,
-        sizeof(key_length),
-        0), "NCryptSetProperty for key length failed.");
-
-    SECURITY_DESCRIPTOR sec_descr{};
-    if (!InitializeSecurityDescriptor(&sec_descr, SECURITY_DESCRIPTOR_REVISION))
-    {
-        log_and_exit_if_failed(GetLastError(), L"InitializeSecurityDescriptor error: 0x%d");
-        THROW_WIN32(GetLastError());
-    }
-
-    THROW_IF_FAILED_MSG(NCryptSetProperty(
-        key.get(),
-        NCRYPT_SECURITY_DESCR_PROPERTY,
-        (PBYTE)&sec_descr,
-        sizeof(sec_descr),
-        DACL_SECURITY_INFORMATION), "NCryptSetProperty for security descriptor failed.");
-
-    if (finalize)
-    {
-        THROW_IF_FAILED_MSG(NCryptFinalizeKey(key.get(), 0), "NCryptFinalizeKey failed.");
-    }
-
-    return key;
-}
-
 LPVOID g_enclave_base = nullptr;
-
+ 
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave/ diretory.
 void create_enclave()
 {
     ENCLAVE_CREATE_INFO_VBS create_info =
@@ -266,6 +218,7 @@ void create_enclave()
 
 }
 
+// Returns a function pointer to the address of the specified function within the enclave.
 LPENCLAVE_ROUTINE load_enclave_export(LPCSTR procName)
 {
     LPENCLAVE_ROUTINE address = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(g_enclave_base), procName));
@@ -277,6 +230,9 @@ LPENCLAVE_ROUTINE load_enclave_export(LPCSTR procName)
     return address;
 }
 
+// Initializes the attestation functions. initialize_attestation_library takes in the function address pointers of the enclave
+// functions and maps them such that when you call a normal mode attestation function, it will now call sample_enclave_att version
+// of the function instead. This is to maintain the same attestation flow in both VTL0 and VTL1.
 void initialize()
 {
     ENCLAVE_ATTESTATION_INIT_LIBRARY_CONFIGURATION init_library_configuration{
@@ -294,7 +250,8 @@ void initialize()
     log_and_exit_if_failed(initialize_attestation_library(&init_library_configuration), L"initialize_attestation_library failed");
 }
 
-
+// Returns the attestation report. This function calls att_get_report --> sample_enclave_att_get_report and then stores the report
+// in a JWT file that can now be parsed. 
 uint8_t* get_report(const ATTESTATION_SESSION_HANDLE& session_handle)
 {
     UINT32 outputSize = 0;
@@ -316,6 +273,8 @@ uint8_t* get_report(const ATTESTATION_SESSION_HANDLE& session_handle)
         out.write(reinterpret_cast<char*>(report), report_size);
         cout << "Report saved to " << file_name << "." << endl;
     }
+
+    wcout << L"Report with size " << report_size << L" can now be sent to the replying party for parsing" << endl;
     return report;
 }
 
@@ -358,6 +317,7 @@ int __cdecl wmain(int, wchar_t* [])
         log_and_exit_if_failed(att_create_session(rp_custom_data.data(), (UINT32)rp_custom_data.size(), rp_id.c_str(), (UINT32)rp_id.size() + 1, 0, &session_handle),
             L"CreateSession failed.");
 #else
+        // Calls att_create_session --> sample_enclave_att_create_session to create an enclave attestation session
         att_result hr = att_create_session(ATT_SESSION_TYPE_VBS, &params, &session);
         log_and_exit_if_failed(hr, L"CreateSession failed.");
 
@@ -371,6 +331,8 @@ int __cdecl wmain(int, wchar_t* [])
     bool complete = false;
     vector<uint8_t> received_from_server{};
 
+    // Calls att_attest --> sample_enclave_att_attest and sends the attestation data to the attestation service
+    // until attestation is complete.
     while (!complete)
     {
         att_buffer send_to_server = nullptr;
@@ -386,7 +348,6 @@ int __cdecl wmain(int, wchar_t* [])
     wcout << L"Attestation is complete." << endl;
 
     uint8_t* report = get_report(session.get());
-    wcout << L"report with size " << sizeof(report) << L" can now be sent to the replying party for parsing" << endl;
 
     return 0;
 }
