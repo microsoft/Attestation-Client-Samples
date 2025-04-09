@@ -56,7 +56,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(params, "report_boot.jwt");
+        attest(params, "report_boot.jwt", ATT_SESSION_TYPE_TPM);
     }
     catch (const std::exception& ex)
     {

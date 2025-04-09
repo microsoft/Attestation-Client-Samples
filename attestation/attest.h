@@ -19,7 +19,7 @@ using att_session = wil::unique_any<att_session_handle, decltype(&att_close_sess
 using att_buffer = wil::unique_any<uint8_t*, decltype(&att_free_buffer), att_free_buffer>;
 
 // Performs the attestation loop.
-void attest(const att_session_params_tpm& params, const std::string& file_name);
+void attest(const att_session_params_tpm& params, const std::string& file_name, const char* session_type);
 
 // Sends the data to the attestation service.
 std::vector<uint8_t> send_to_att_service(const uint8_t* data, size_t size);

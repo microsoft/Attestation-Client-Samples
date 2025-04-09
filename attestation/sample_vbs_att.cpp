@@ -16,7 +16,6 @@
 #include <attest.h>
 #include <utils.h>
 
-
 #define AIK_NAME L"att_sample_aik"
 
 using namespace std;
@@ -33,119 +32,6 @@ typedef uint64_t ATTESTATION_SESSION_HANDLE;
 
 // Use VSM mode if supported, otherwise use normal mode
 #define ENCLAVE_ATTESTATION_INIT_LIBRARY_USE_VSM_MODE_IF_SUPPORTED 0x2
-
-//
-// attestation_configure and attestation_call are address pointers to the export functions exposed by the enclave
-// See attest_enclave.h for more detail
-//
-struct ENCLAVE_ATTESTATION_FUNCTION_TABLE
-{
-    LPENCLAVE_ROUTINE attestation_configure;
-    LPENCLAVE_ROUTINE attestation_create_session;
-    LPENCLAVE_ROUTINE attestation_attest;
-    LPENCLAVE_ROUTINE attestation_get_report;
-    LPENCLAVE_ROUTINE attestation_close_session;
-};
-
-// attestation_flag is optional and can be 0. It is used to override the default behavior which is ENCLAVE_ATTESTATION_INIT_LIBRARY_USE_VSM_MODE_ALWAYS flag
-//            Currently supports:
-//                ENCLAVE_ATTESTATION_INIT_LIBRARY_USE_VSM_MODE_ALWAYS
-//                ENCLAVE_ATTESTATION_INIT_LIBRARY_USE_NORMAL_MODE_ALWAYS
-//                ENCLAVE_ATTESTATION_INIT_LIBRARY_USE_VSM_MODE_IF_SUPPORTED
-// attestation_identity_key_name is optional and can be NULL. If it's NULL, "Windows AIK" will be used.
-// attestation_function_table is required. See enclave_attestation_function_table definition for more detail.
-struct ENCLAVE_ATTESTATION_INIT_LIBRARY_CONFIGURATION
-{
-    uint32_t                              attestation_flag;
-    const char*                           attestation_identity_key_name;
-    enclave_attestation_function_table    attestation_function_table;
-};
-
-struct enclave_attestation_callback_function_table
-{
-    uint32_t          version;
-    LPENCLAVE_ROUTINE allocate_params;
-    LPENCLAVE_ROUTINE allocate_memory;
-    LPENCLAVE_ROUTINE free_memory;
-    LPENCLAVE_ROUTINE get_tcg_log;
-    LPENCLAVE_ROUTINE trace_log;
-    LPENCLAVE_ROUTINE get_metadata;
-    LPENCLAVE_ROUTINE get_key_info;
-    LPENCLAVE_ROUTINE sign_hash;
-};
-
-struct enclave_attestation_configure_params
-{
-    size_t size;
-
-    // Input params.
-    enclave_attestation_callback_function_table callback_function_able;
-};
-
-struct create_session_params
-{
-    size_t size;
-
-    // Input params.
-    const uint8_t* relying_party_custom_data;
-    uint32_t relying_party_custom_data_size;
-    const char* relying_party_unique_id;
-    uint32_t relying_party_unique_id_size;
-    uint32_t session_flags;
-    const att_tpm_aik* attestation_identity_key;
-    const att_tpm_key* request_key;
-    const att_tpm_key* other_keys;
-    uint32_t other_keys_count;
-
-    // Output params.
-    ATTESTATION_SESSION_HANDLE attestation_session_handle;
-};
-
-struct enclave_attestation_create_session_params
-{
-    create_session_params params;
-    enclave_attestation_property* enclave_properties;
-    uint32_t enclave_properties_size;
-    uint32_t flags;
-};
-
-struct enclave_attestation_attest_params
-{
-    size_t size;
-
-    // Input params.
-    ATTESTATION_SESSION_HANDLE attestation_session_handle;
-    const UINT8* input;
-    UINT32 input_size;
-
-    // Output params.
-    uint8_t* output;
-    UINT32 buffer_size;
-    UINT32 output_size;
-    bool complete;
-};
-
-struct enclave_attestation_get_report_params
-{
-    size_t size;
-
-    // Input params.
-    ATTESTATION_SESSION_HANDLE attestation_session_handle;
-
-    // Output params.
-    uint8_t* report;
-    uint32_t buffer_size;
-    uint32_t report_size;
-};
-
-struct enclave_attestation_close_session_params
-{
-    size_t size;
-
-    // Input params.
-    ATTESTATION_SESSION_HANDLE attestation_session_handle;
-};
-
 
 void log_and_exit_if_failed(HRESULT hr, LPCWSTR message)
 {
@@ -235,47 +121,19 @@ LPENCLAVE_ROUTINE load_enclave_export(LPCSTR procName)
 // of the function instead. This is to maintain the same attestation flow in both VTL0 and VTL1.
 void initialize()
 {
-    ENCLAVE_ATTESTATION_INIT_LIBRARY_CONFIGURATION init_library_configuration{
-        0,
-        "att_sample_aik",
-        {
-            load_enclave_export("sample_enclave_att_configure"),
-            load_enclave_export("sample_enclave_att_create_session"),
-            load_enclave_export("sample_enclave_att_attest"),
-            load_enclave_export("sample_enclave_att_get_report"),
-            load_enclave_export("sample_enclave_att_close_session")
-        }
+    enclave_attestation_init_library_configuration init_library_configuration{
+            0,
+            "att_sample_aik",
+            {
+                load_enclave_export("sample_enclave_att_configure"),
+                load_enclave_export("sample_enclave_att_create_session"),
+                load_enclave_export("sample_enclave_att_attest"),
+                load_enclave_export("sample_enclave_att_get_report"),
+                load_enclave_export("sample_enclave_att_close_session")
+            }
     };
 
     log_and_exit_if_failed(initialize_attestation_library(&init_library_configuration), L"initialize_attestation_library failed");
-}
-
-// Returns the attestation report. This function calls att_get_report --> sample_enclave_att_get_report and then stores the report
-// in a JWT file that can now be parsed. 
-uint8_t* get_report(const ATTESTATION_SESSION_HANDLE& session_handle)
-{
-    UINT32 outputSize = 0;
-
-    enclave_attestation_get_report_params params;
-    params.attestation_session_handle = session_handle;
-    params.report = nullptr;
-    params.buffer_size = 0;
-    params.report_size = 0;
-    params.size = sizeof(enclave_attestation_get_report_params);
-
-    uint8_t* report = nullptr;
-    size_t report_size = 0;
-    att_result hr = att_get_report(session_handle, &report, &report_size);
-    string file_name = "enclave-att-report.jwt";
-    if (!file_name.empty())
-    {
-        ofstream out(file_name, ios::binary);
-        out.write(reinterpret_cast<char*>(report), report_size);
-        cout << "Report saved to " << file_name << "." << endl;
-    }
-
-    wcout << L"Report with size " << report_size << L" can now be sent to the replying party for parsing" << endl;
-    return report;
 }
 
 int __cdecl wmain(int, wchar_t* [])
@@ -313,41 +171,12 @@ int __cdecl wmain(int, wchar_t* [])
             0                // other_keys_count
         };
 
-#ifdef ATTESTV1
-        log_and_exit_if_failed(att_create_session(rp_custom_data.data(), (UINT32)rp_custom_data.size(), rp_id.c_str(), (UINT32)rp_id.size() + 1, 0, &session_handle),
-            L"CreateSession failed.");
-#else
-        // Calls att_create_session --> sample_enclave_att_create_session to create an enclave attestation session
-        att_result hr = att_create_session(ATT_SESSION_TYPE_VBS, &params, &session);
-        log_and_exit_if_failed(hr, L"CreateSession failed.");
-
-#endif
+        attest(params, "enclave-att-report.jwt", ATT_SESSION_TYPE_VBS);
     }
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;
     }
-
-    bool complete = false;
-    vector<uint8_t> received_from_server{};
-
-    // Calls att_attest --> sample_enclave_att_attest and sends the attestation data to the attestation service
-    // until attestation is complete.
-    while (!complete)
-    {
-        att_buffer send_to_server = nullptr;
-        size_t send_to_server_size = 0;
-        att_result hr = att_attest(session.get(), received_from_server.data(), received_from_server.size(), &send_to_server, &send_to_server_size, &complete);
-        log_and_exit_if_failed(hr, L"att_attest");
-        if (send_to_server_size > 0)
-        {
-            received_from_server = send_to_att_service(send_to_server.get(), send_to_server_size);
-        }
-    }
-
-    wcout << L"Attestation is complete." << endl;
-
-    uint8_t* report = get_report(session.get());
 
     return 0;
 }
