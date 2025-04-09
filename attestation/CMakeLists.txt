@@ -55,7 +55,7 @@ set(
     onecore.lib
     ncrypt
     "${ATTEST_PACKAGE_DIR}/lib/azure-attest-manager.lib"
-    "D:/VBSEnclave/AzureAttest/lib/AzureAttest.lib"
+    "C:/Attestation-Client-Samples/AzureAttest/lib/AzureAttest.lib"
     Azure::azure-identity
     Azure::azure-security-attestation
 )
@@ -73,7 +73,7 @@ set(
     "${CMAKE_SOURCE_DIR}/wil/include/"
     "${ATTEST_PACKAGE_DIR}/inc"
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "D:/VBSEnclave/AzureAttest/inc"
+    "C:/Attestation-Client-Samples/AzureAttest/inc"
 )
 
 message(STATUS "Include directories: ${HostIncs}")
