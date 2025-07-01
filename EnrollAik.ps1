@@ -8,6 +8,9 @@ Name of the key to be created.
 .PARAMETER AclIdentity
 Changes the ACL on the key so it can be read by the user/group specified by this parameter. This can be used to configure the account under which the MAA client executes so it does not have to be run with elevated permissions.
 The script can also be used to configure the ACL on a previously created key.
+.PARAMETER AclIdentitySid
+Changes the ACL on the key so it can be read by the SID specified by this parameter. This can be used to configure the account under which the MAA client executes so it does not have to be run with elevated permissions.
+The script can also be used to configure the ACL on a previously created key.
 .EXAMPLE
 EnrollAik.ps1 MyOrgAik
 => Creates an AIK called "MyOrgAik" and enrolls it with Azure Certificate Services to get an associated AIK certificate.
@@ -19,13 +22,19 @@ Additionally, grants read permission on the key to "TestAccount".
 EnrollAik.ps1 MyOrgAik -AclIdentity "NT AUTHORITY\Authenticated Users"
 => Creates an AIK called "MyOrgAIK" and enrolls it with Azure Certificate Services to get an associated AIK certificate.
 Additionally, grants read permission on the key to all Authenticated users (those signed into the domain).
+.EXAMPLE
+EnrollAik.ps1 MyOrgAik -AclIdentitySid "S-1-5-11"
+=> Creates an AIK called "MyOrgAIK" and enrolls it with Azure Certificate Services to get an associated AIK certificate.
+Additionally, grants read permission on the key to all Authenticated users (those signed into the domain) using a SID.
 #>
 
 <# Copyright (c) Microsoft Corporation.  All rights reserved. #>
 
+[CmdletBinding(DefaultParameterSetName = 'AclIdentity')]
 Param(
-    [Parameter(Mandatory = $true)][string]$KeyName,
-    [Parameter()][string]$AclIdentity
+    [Parameter(Mandatory = $true, Position = 0)][string]$KeyName,
+    [Parameter(ParameterSetName = 'AclIdentity')][string]$AclIdentity,
+    [Parameter(ParameterSetName = 'AclIdentitySid')][string]$AclIdentitySid
 )
 
 function PrettyPrintCapturedOutput {
@@ -57,8 +66,15 @@ if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $NTE_KEY_EXISTS) {
     PrettyPrintCapturedOutput $reqOutput
     Write-Host "Key is available." -ForegroundColor Green
 
-    if ($AclIdentity) {
-        Write-Host "Granting read access to $AclIdentity..." -ForegroundColor Green
+    if ($AclIdentity -or $AclIdentitySid) {
+        if ($AclIdentity) {
+            $identity = $AclIdentity
+        }
+        else {
+            $identity = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList $AclIdentitySid
+        }
+           
+        Write-Host "Granting read access to $identity..." -ForegroundColor Green
 
         # Retrieve the disk location for the key
         $cmdLine = "certutil.exe -CSP TPM -key $KeyName"
@@ -77,7 +93,6 @@ if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $NTE_KEY_EXISTS) {
 
             $acl = Get-Acl -Path $keyPath
             # Set read ACE
-            $identity = $AclIdentity
             $fileSystemRights = "Read"
             $type = "Allow"
             # Create new rule
@@ -89,7 +104,7 @@ if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $NTE_KEY_EXISTS) {
 
             $acl = Get-Acl -path $keyPath
             Write-Debug ($acl.Access | Format-List | out-string)
-            Write-Host "Key is accessible by $AclIdentity now." -ForegroundColor Green
+            Write-Host "Key is accessible by $identity now." -ForegroundColor Green
         }
         else {
             Write-Error "Unexpected return from certutil ($($LASTEXITCODE)) when searching for $KeyName. The key has *not* been ACL'd."
