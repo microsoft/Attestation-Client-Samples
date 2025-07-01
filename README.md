@@ -26,13 +26,9 @@ This sample creates a TPM key named "att_sample_key" which is attested by Micros
 
 * An AIK named "att_sample_aik" must be available. Run the EnrollAik.ps1 script to create the key and retrieve an AIK certificate for it (notice that the command below allows the key to be accessed by all users on the machine):
 
-        EnrollAik.ps1 att_sample_aik -AclIdentity BUILTIN\Users
+```EnrollAik.ps1 att_sample_aik -AclIdentity BUILTIN\Users``` [^1]
 
-* Notice that some Windows built-in security group names may be localized. EnrollAik.ps1 also accepts a SID to grant permissions to a key (command below allows the key to be accessed by all users on the machine):
-
-        EnrollAik.ps1 att_sample_aik -AclIdentitySid S-1-5-32-545
-
-* More information about Windows security groups can be found [here](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups).
+[^1]: Some Windows built-in security group names may be localized. EnrollAik.ps1 also accepts a SID to grant permissions to a key: `EnrollAik.ps1 att_sample_aik -AclIdentitySid S-1-5-32-545`. More information about Windows security groups can be found [here](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups).
 
 
 ## Running attestation samples
