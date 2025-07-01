@@ -71,7 +71,7 @@ if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $NTE_KEY_EXISTS) {
             $identity = $AclIdentity
         }
         else {
-            $identity = New-Object -TypeName System.Security.Principal.SecurityIdentifier -ArgumentList $AclIdentitySid
+            $identity = New-Object System.Security.Principal.SecurityIdentifier($AclIdentitySid)
         }
            
         Write-Host "Granting read access to $identity..." -ForegroundColor Green

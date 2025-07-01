@@ -28,7 +28,7 @@ This sample creates a TPM key named "att_sample_key" which is attested by Micros
 
 ```EnrollAik.ps1 att_sample_aik -AclIdentity BUILTIN\Users``` [^1]
 
-[^1]: Some Windows built-in security group names may be localized. EnrollAik.ps1 also accepts a SID to grant permissions to a key: `EnrollAik.ps1 att_sample_aik -AclIdentitySid S-1-5-32-545` (allows the key to be accessed by all users on the machine). More information about Windows security groups can be found [here](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups).
+[^1]: Some Windows built-in security group names may be localized. EnrollAik.ps1 also accepts a SID to grant permissions to a key: `EnrollAik.ps1 att_sample_aik -AclIdentitySid S-1-5-32-545` (allows the key to be accessed by all users on the machine). More information about Windows security groups can be found [here](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups). Well-known SIDs are listed [here](https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids).
 
 
 ## Running attestation samples
