@@ -1,0 +1,8 @@
+LIBRARY
+
+EXPORTS
+        sample_att_enclave_configure
+        sample_att_enclave_create_session
+        sample_att_enclave_attest
+        sample_att_enclave_get_report
+        sample_att_enclave_close_session

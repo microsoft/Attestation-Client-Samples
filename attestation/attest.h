@@ -17,7 +17,10 @@ using att_session = wil::unique_any<att_session_handle, decltype(&att_close_sess
 // att_buffer automatically frees the buffer.
 using att_buffer = wil::unique_any<uint8_t*, decltype(&att_free_buffer), att_free_buffer>;
 
-// Performs the attestation loop.
+// Performs the tpm attestation loop.
 void attest(const att_session_params_tpm& params, const std::string& file_name);
+
+// Performs the enclave attestation loop
+void attest(const att_session_params_enclave& params, const std::string& file_name);
 
 #endif // _ATT_SAMPLES_ATTEST_H

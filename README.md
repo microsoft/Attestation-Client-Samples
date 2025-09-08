@@ -13,6 +13,12 @@ This sample provides the code implementation to perform boot attestation, and re
 This sample provides the code implementation to perform boot and TPM key attestation, and retrieve an attestation token from Microsoft Azure Attestation.
 This sample creates a TPM key named "att_sample_key" which is attested by Microsoft Azure Attestation. The creation of a TPM key may take up to a few minutes depending on the TPM hardware.
 
+### **VBS enclave attestation (sample_enclave_att.exe)**
+
+This sample provides the code implementation to perform VBS enclave attestation, and retrieve an attestation token from Microsoft Azure Attestation.
+An enclave dll must be created and signed before the enclave host sample is run. A sample enclave is provided in the "enclave" directory. It is compiled into vbsenclave.dll,
+which is loaded and called by the enclave sample.
+
 ## Sample Requirements
 
 * The machine must have a Trusted Platform Module (TPM).
@@ -27,6 +33,8 @@ This sample creates a TPM key named "att_sample_key" which is attested by Micros
 * An AIK named "att_sample_aik" must be available. Run the EnrollAik.ps1 script to create the key and retrieve an AIK certificate for it (notice that the command below allows the key to be accessed by all users on the machine):
 
 ```EnrollAik.ps1 att_sample_aik -AclIdentity BUILTIN\Users``` [^1]
+
+* Each sample creates a TPM key named "att_sample_key" which is attested by Microsoft Azure Attestation. The creation of a TPM key may take up to a few minutes depending on the TPM hardware. The presence of a TPM key is required.
 
 [^1]: Some Windows built-in security group names may be localized. EnrollAik.ps1 also accepts a SID to grant permissions to a key: `EnrollAik.ps1 att_sample_aik -AclIdentitySid S-1-5-32-545` (allows the key to be accessed by all users on the machine). More information about Windows security groups can be found [here](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups). Well-known SIDs are listed [here](https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids).
 
@@ -50,6 +58,7 @@ Note: EnrollAik.ps1 won't be able to get an AIK certificate on a virtual machine
 * TPM attestation: https://learn.microsoft.com/en-us/azure/attestation/tpm-attestation-concepts
 * Attestation policy: https://learn.microsoft.com/en-us/azure/attestation/policy-version-1-2
 * Trusted Computing Group TPM 2.0 Spec: https://trustedcomputinggroup.org/resource/tpm-library-specification/
+* VBS Enclaves Development Guide: https://learn.microsoft.com/en-us/windows/win32/trusted-execution/vbs-enclaves-dev-guide
 
 ## Contributing
 

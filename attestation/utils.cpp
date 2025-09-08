@@ -8,8 +8,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <stdlib.h>
-#include <wil/resource.h>
-#include <Windows.h>
 
 using namespace std;
 

@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required(VERSION 3.29)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_LIST_DIR}/cmake-modules/overlay-ports")
 
@@ -25,10 +28,22 @@ if(NOT NUGET_EXE)
 endif()
 
 if(NOT NUGET_EXE)
-    message(FATAL "CMake could not find the nuget command line tool. Please install it from https://www.nuget.org/downloads and move it to ${CMAKE_CURRENT_SOURCE_DIR}!")
+    message(FATAL_ERROR "CMake could not find the nuget command line tool. Please install it from https://www.nuget.org/downloads and move it to ${CMAKE_CURRENT_SOURCE_DIR}!")
 else()
-    exec_program(${NUGET_EXE}
-        ARGS install "Microsoft.Attestation.Client" -Version 0.1.181 -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages)
+    execute_process(
+        COMMAND ${NUGET_EXE} install "Microsoft.Attestation.Client" -Version 0.1.181 -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages
+        RESULT_VARIABLE NUGET_RESULT
+        OUTPUT_VARIABLE NUGET_OUTPUT
+        ERROR_VARIABLE NUGET_ERROR
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    if(NUGET_RESULT)
+        message(FATAL_ERROR "NuGet package installation failed: ${NUGET_ERROR}")
+    else()
+        message(STATUS "NuGet package installed successfully: ${NUGET_OUTPUT}")
+    endif()
 endif()
 
 add_subdirectory(attestation)
+add_subdirectory(enclave)
