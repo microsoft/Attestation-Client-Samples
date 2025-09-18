@@ -12,7 +12,7 @@
  * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
  *
- * In addition, a TPM attestation identity key named 'att_sample_aik' and a TPM request key named 'att_sample_key' must be created. See README.md for instructions.
+ * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
  *
  * Finally, a fixed relying party id and nonce are used in this sample. An application should obtain a per-session nonce from the relying party before making
  * the call to the attestation service. TODOs in the code below mark the locations to be updated.
@@ -21,18 +21,15 @@
 
 #include "utils.h"
 #include "attest.h"
-
+#include <string>
 #include <iostream>
-#include <fstream>
 #include <vector>
-#include <ncrypt.h>
 
 #include <att_manager.h>
 
 using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
-#define REQUEST_KEY_NAME L"att_sample_key"
 
 // Creates an enclave based on the vbsenclave.dll compiled in the enclave/ diretory.
 HRESULT create_enclave(LPVOID* enclave_base)
@@ -112,10 +109,10 @@ int __cdecl wmain(int, wchar_t* [])
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto tpm_key = create_tpm_key(REQUEST_KEY_NAME, false);
+        auto ephemeral_key = create_ephemeral_key();
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_NCRYPT(tpm_key.get());
+        att_tpm_key key = ATT_TPM_KEY_NCRYPT(ephemeral_key.get());
 
         att_enclave_function_table function_table = {
             load_enclave_export("sample_att_enclave_configure", enclave_base),
@@ -134,8 +131,8 @@ int __cdecl wmain(int, wchar_t* [])
             &key,                                 // request_key
             nullptr,                              // other_keys
             0,                                    // other_keys_count
-            function_table,                       // att_enclave_function_table
-            ATT_ENCLAVE_USE_VSM_MODE_IF_SUPPORTED // att_enclave_flags
+            &function_table,                      // att_enclave_function_table
+            ATT_ENCLAVE_FLAG_USE_VSM_MODE_ALWAYS  // att_enclave_flags
         };
 
         attest(params, "report_enclave.jwt");

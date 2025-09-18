@@ -26,20 +26,68 @@ wil::unique_ncrypt_key create_tpm_key(const wstring& name, bool machine_key)
 {
     cout << "Creating TPM key...";
 
-    wil::unique_ncrypt_prov tpm_prov{};
-    THROW_IF_FAILED_MSG(NCryptOpenStorageProvider(&tpm_prov, MS_PLATFORM_KEY_STORAGE_PROVIDER, 0), "Error opening TPM provider.");
+    DWORD flags = NCRYPT_OVERWRITE_KEY_FLAG | (machine_key ? NCRYPT_MACHINE_KEY_FLAG : 0);
 
-    wil::unique_ncrypt_key tpm_key{};
-    THROW_IF_FAILED_MSG(NCryptCreatePersistedKey(tpm_prov.get(), &tpm_key, BCRYPT_RSA_ALGORITHM, name.c_str(), 0, NCRYPT_OVERWRITE_KEY_FLAG | (machine_key ? NCRYPT_MACHINE_KEY_FLAG : 0)), "Error creating TPM key.");
-
-    DWORD key_len = 2048;
-    THROW_IF_FAILED_MSG(NCryptSetProperty(tpm_key.get(), NCRYPT_LENGTH_PROPERTY, reinterpret_cast<PBYTE>(&key_len), sizeof(key_len), 0), "Error setting key length.");
-
-    THROW_IF_FAILED_MSG(NCryptFinalizeKey(tpm_key.get(), 0), "Error finalizing TPM key.");
+    wil::unique_ncrypt_key tpm_key = create_key(
+        MS_PLATFORM_KEY_STORAGE_PROVIDER,
+        name,
+        flags,
+        true
+    );
 
     cout << " Done." << endl;
 
     return tpm_key;
+}
+
+wil::unique_ncrypt_key create_ephemeral_key()
+{
+    cout << "Creating ephemeral key...";
+
+    wil::unique_ncrypt_key ephemeral_key = create_key(
+        MS_PLATFORM_KEY_STORAGE_PROVIDER,
+        L"",                                // keyName: empty for ephemeral
+        0,
+        true
+    );
+
+    cout << " Done." << endl;
+
+    return ephemeral_key;
+}
+
+wil::unique_ncrypt_key create_key(PCWSTR providerName, const wstring& keyName, DWORD flags, bool finalize)
+{
+    wil::unique_ncrypt_prov provHandle{};
+    THROW_IF_FAILED_MSG(NCryptOpenStorageProvider(
+        &provHandle,
+        providerName,
+        0), "NCryptOpenStorageProvider failed.");
+
+    wil::unique_ncrypt_key key{};
+    THROW_IF_FAILED_MSG(NCryptCreatePersistedKey(
+        provHandle.get(),
+        &key,
+        BCRYPT_RSA_ALGORITHM,
+        (keyName.empty() ? NULL : keyName.c_str()),
+        0,
+        flags), "NCryptCreatePersistedKey failed.");
+
+    DWORD key_len = 2048;
+    THROW_IF_FAILED_MSG(
+        NCryptSetProperty(
+            key.get(),
+            NCRYPT_LENGTH_PROPERTY,
+            reinterpret_cast<PBYTE>(&key_len),
+            sizeof(key_len),
+            0), "NCryptSetProperty for key length failed.");
+
+    if (finalize)
+    {
+        THROW_IF_FAILED_MSG(NCryptFinalizeKey(key.get(), 0), "NCryptFinalizeKey failed.");
+    }
+
+    return key;
 }
 
 std::string get_env_var(const std::string& env)

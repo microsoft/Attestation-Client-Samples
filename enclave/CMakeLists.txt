@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.15)
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# SPDX-License-Identifier: MIT
 
 project(enclave LANGUAGES C)
 
@@ -39,38 +40,17 @@ target_link_libraries(vbsenclave PRIVATE
         "${ATTEST_PACKAGE_DIR}/lib/AzureAttest.lib"
     )
 
-target_link_options(vbsenclave PRIVATE /NODEFAULTLIB)
-
 target_precompile_headers(vbsenclave PRIVATE ${PRECOMPILED_HEADER})
 
-target_compile_options(vbsenclave PRIVATE
-    /JMC /permissive- /Zi /Od /sdl
-    /D_DEBUG /D_CONSOLE /D_WINDLL /D_UNICODE /DUNICODE
-    /W3 /WX- /diagnostics:column /Gm- /EHsc /MDd /GS /fp:precise
-    /Zc:wchar_t /Zc:forScope /Zc:inline
-)
+target_compile_options(vbsenclave PRIVATE /Zi)
 
 target_link_options(vbsenclave PRIVATE
-    /ERRORREPORT:PROMPT
     /INCREMENTAL:NO
-    /NOLOGO
     /NODEFAULTLIB
     /DEF:${CMAKE_CURRENT_SOURCE_DIR}/vbsenclave.def
-    /MANIFEST
-    /MANIFESTUAC:"level='asInvoker' uiAccess='false'"
-    /MANIFEST:embed
-    /DEBUG
-    /PDB:${CMAKE_BINARY_DIR}/attestation/vbsenclave.pdb
-    /SUBSYSTEM:CONSOLE
-    /TLBID:1
-    /DYNAMICBASE
-    /NXCOMPAT
-    /IMPLIB:${CMAKE_BINARY_DIR}/attestation/vbsenclave.lib
-    /MACHINE:X64
     /INTEGRITYCHECK
     /ENCLAVE
     /GUARD:MIXED
-    /DLL
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -93,7 +73,3 @@ add_custom_command(TARGET vbsenclave POST_BUILD
     COMMAND "$ENV{WindowsSdkVerBinPath}$ENV{VSCMD_ARG_HOST_ARCH}/veiid.exe" "${CMAKE_BINARY_DIR}/attestation/vbsenclave.dll"
     COMMENT "Applying VEIID Protection"
 )
-
-string(REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-set (CMAKE_SHARED_LINKER_FLAGS_DEBUG "/DEBUG /INCREMENTAL:NO" CACHE STRING "Overriding default debug ${flag_type} linker flags." FORCE)

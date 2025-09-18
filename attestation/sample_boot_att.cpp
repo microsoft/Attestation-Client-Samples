@@ -13,7 +13,7 @@
  * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
  * 
- * In addition, a TPM attestation identity key named 'att_sample_aik' and a TPM request key named 'att_sample_key' must be created. See README.md for instructions.
+ * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
  * 
  * Finally, a fixed relying party id and nonce are used in this sample. An application should obtain a per-session nonce from the relying party before making
  * the call to the attestation service. TODOs in the code below mark the locations to be updated.
@@ -31,7 +31,6 @@
 using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
-#define REQUEST_KEY_NAME L"att_sample_key"
 
 int main()
 {
@@ -43,10 +42,10 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto tpm_key = create_tpm_key(REQUEST_KEY_NAME, false);
+        auto ephemeral_key = create_ephemeral_key();
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_NCRYPT(tpm_key.get());
+        att_tpm_key key = ATT_TPM_KEY_NCRYPT(ephemeral_key.get());
 
         att_session_params_tpm params
         {

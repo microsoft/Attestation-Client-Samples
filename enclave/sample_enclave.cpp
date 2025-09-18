@@ -31,12 +31,12 @@ BOOL WINAPI DllMain(HINSTANCE hInstance,
 extern "C"
 {
 
-    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_configure(void* param)
+    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_configure(LPVOID param)
     {
-        return att_enclave_configure(param, 0);
+        return att_enclave_configure(param, ATT_ENCLAVE_CONFIG_FLAGS_NONE);
     }
 
-    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_create_session(void* param)
+    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_create_session(LPVOID param)
     {
         // any payload you want to put in the report which will get signed.
         att_enclave_property properties[1]{};
@@ -47,17 +47,17 @@ extern "C"
         return att_enclave_create_session(param, properties, 1, 0);
     }
 
-    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_attest(void* param)
+    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_attest(LPVOID param)
     {
         return att_enclave_attest(param);
     }
 
-    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_get_report(void* param)
+    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_get_report(LPVOID param)
     {
         return att_enclave_get_report(param);
     }
 
-    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_close_session(void* param)
+    __declspec(dllexport) LPVOID WINAPI sample_att_enclave_close_session(LPVOID param)
     {
         return att_enclave_close_session(param);
     }

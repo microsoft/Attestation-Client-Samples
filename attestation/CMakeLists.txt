@@ -36,107 +36,24 @@ endmacro()
 
 define_sample(sample_boot_att)
 define_sample(sample_tpm_key_att)
-
-
-if (WIN32)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
-
-
-find_package(azure-identity-cpp CONFIG REQUIRED)
-find_package(azure-security-attestation-cpp CONFIG REQUIRED)
-
-
-set(
-    HostLibs
-    kernel32.lib
-    bcrypt.lib
-    user32.lib
-    onecore.lib
-    ncrypt
-    "${ATTEST_PACKAGE_DIR}/lib/azure-attest-manager.lib"
-    Azure::azure-identity
-    Azure::azure-security-attestation
-)
-
-set(
-    HostSources
-    "${CMAKE_CURRENT_SOURCE_DIR}/sample_enclave_att.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/attest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp"
-)
-
-
-set(
-    HostIncs
-    "${CMAKE_SOURCE_DIR}/wil/include/"
-    "${ATTEST_PACKAGE_DIR}/inc"
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
-message(STATUS "Include directories: ${HostIncs}")
-
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(
-    bintarget
-    attestation-sample_enclave_att
-    )
-
-
-add_executable(
-    ${bintarget}
-    ${HostSources}
-    )
-
+define_sample(sample_enclave_att)
 
 if (WIN32)
     target_precompile_headers(
-        ${bintarget}
+        attestation-sample_enclave_att
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/precomp.h"
         )
 endif()
 
 target_link_libraries(
-    ${bintarget}
+    attestation-sample_enclave_att
     PRIVATE
-    ${HostLibs}
+    onecore.lib
     )
 
 target_include_directories(
-    ${bintarget}
+    attestation-sample_enclave_att
     PRIVATE
-    ${HostIncs}
-    )
-
-
-set_target_properties( ${bintarget} PROPERTIES WIN32_EXECUTABLE OFF)
-
-target_compile_definitions(
-    ${bintarget}
-    PRIVATE
-    ${UCRTSETTINGS_CL_PREPROCESSOR_DEFS_COMMON}
-    )
-
-
-
-if(WIN32)
-    target_compile_options(
-        ${bintarget}
-        PRIVATE
-        "${UCRTSETTINGS_CL_FLAGS_COMMON}"
-        "${UCRTSETTINGS_CL_FLAGS_CXX}"
-        )
-        
-    target_link_options(
-        ${bintarget}
-        PRIVATE /SUBSYSTEM:CONSOLE
-        )
-endif()
-
-install(
-    TARGETS ${bintarget}
-    RUNTIME
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_SOURCE_DIR}/wil/include/"
     )

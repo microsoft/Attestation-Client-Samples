@@ -14,6 +14,11 @@ wil::unique_ncrypt_key load_tpm_key(const std::wstring& name, bool machine_key);
 // Creates a 2048-bit RSA key in the TPM using the Platform Key Storage Provider.
 wil::unique_ncrypt_key create_tpm_key(const std::wstring& name, bool machine_key);
 
+wil::unique_ncrypt_key create_ephemeral_key();
+
+// Creates a 2048-bit RSA key
+wil::unique_ncrypt_key create_key(PCWSTR providerName, const std::wstring& keyName, DWORD flags, bool finalize);
+
 // Returns the value of an environment variable.
 std::string get_env_var(const std::string& env);
 
