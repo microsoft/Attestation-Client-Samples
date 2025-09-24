@@ -26,10 +26,16 @@
 #include <vector>
 
 #include <att_manager.h>
+#include <att_manager_logger.h>
 
 using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
+
+void sample_log_listener(att_log_source source, att_log_level level, const char* message)
+{
+    std::cout << "[LOG] " << message << std::endl;
+}
 
 // Creates an enclave based on the vbsenclave.dll compiled in the enclave/ diretory.
 HRESULT create_enclave(LPVOID* enclave_base)
@@ -97,6 +103,8 @@ LPENCLAVE_ROUTINE load_enclave_export(LPCSTR procName, LPVOID att_enclave_base)
 
 int __cdecl wmain(int, wchar_t* [])
 {
+    att_set_log_listener(sample_log_listener);
+    att_set_log_level(att_log_level_telemetry);
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
 
@@ -135,7 +143,7 @@ int __cdecl wmain(int, wchar_t* [])
             ATT_ENCLAVE_FLAG_USE_VSM_MODE_ALWAYS  // att_enclave_flags
         };
 
-        attest(params, "report_enclave.jwt");
+        attest(ATT_SESSION_TYPE_ENCLAVE, &params, "report_enclave.jwt");
     }
     catch (const std::exception& ex)
     {

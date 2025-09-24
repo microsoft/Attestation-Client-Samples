@@ -67,47 +67,12 @@ vector<uint8_t> send_to_att_service(const uint8_t* data, size_t size)
     }
 }
 
-void attest(const att_session_params_tpm& params, const string& file_name)
+void attest(const char* session_type, const void* params, const string& file_name)
 {
     cout << "Starting attestation..." << endl;
 
     att_session session{};
-    exit_if_failed(att_create_session(ATT_SESSION_TYPE_TPM, &params, &session), "att_create_session");
-
-    bool complete = false;
-    vector<uint8_t> received_from_server{};
-
-    while (!complete)
-    {
-        att_buffer send_to_server = nullptr;
-        size_t send_to_server_size = 0;
-        exit_if_failed(att_attest(session.get(), received_from_server.data(), received_from_server.size(), &send_to_server, &send_to_server_size, &complete), "att_attest");
-        if (send_to_server_size > 0)
-        {
-            received_from_server = send_to_att_service(send_to_server.get(), send_to_server_size);
-        }
-    }
-
-    att_buffer report = nullptr;
-    size_t report_size = 0;
-    exit_if_failed(att_get_report(session.get(), &report, &report_size), "att_get_report");
-
-    cout << "Attestation is complete. Report size: " << report_size << endl;
-
-    if (!file_name.empty())
-    {
-        ofstream out(file_name, ios::binary);
-        out.write(reinterpret_cast<char*>(report.get()), report_size);
-        cout << "Report saved to " << file_name << "." << endl;
-    }
-}
-
-void attest(const att_session_params_enclave& params, const string& file_name)
-{
-    cout << "Starting attestation..." << endl;
-
-    att_session session{};
-    exit_if_failed(att_create_session(ATT_SESSION_TYPE_ENCLAVE, &params, &session), "att_create_session");
+    exit_if_failed(att_create_session(session_type, params, &session), "att_create_session");
 
     bool complete = false;
     vector<uint8_t> received_from_server{};

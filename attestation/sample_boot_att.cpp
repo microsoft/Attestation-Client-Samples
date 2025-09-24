@@ -27,13 +27,22 @@
 #include <iostream>
 
 #include <att_manager.h>
+#include <att_manager_logger.h>
 
 using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
 
+void sample_log_listener(att_log_source source, att_log_level level, const char* message)
+{
+    std::cout << "[LOG] " << message << std::endl;
+}
+
 int main()
 {
+    att_set_log_listener(sample_log_listener);
+    att_set_log_level(att_log_level_telemetry);
+
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
     // TODO: Use relying party's per-session nonce below.
@@ -58,7 +67,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(params, "report_boot.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_boot.jwt");
     }
     catch (const std::exception& ex)
     {

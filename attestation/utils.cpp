@@ -45,14 +45,14 @@ wil::unique_ncrypt_key create_ephemeral_key()
     cout << "Creating ephemeral key...";
 
     wil::unique_ncrypt_key ephemeral_key = create_key(
-        MS_PLATFORM_KEY_STORAGE_PROVIDER,
-        L"",                                // keyName: empty for ephemeral
+        MS_KEY_STORAGE_PROVIDER,
+        L"",
         0,
         true
     );
 
-    cout << " Done." << endl;
-
+    cout << " Done." << endl; 
+    
     return ephemeral_key;
 }
 
