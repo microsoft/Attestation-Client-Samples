@@ -11,6 +11,8 @@
  * - AZURE_CLIENT_ID:     The client ID to authenticate the request. Used for authenticated calls to the attestation service.
  * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
+ * 
+ * @remark You must customize the enclave image configuration in enclave/enclave.c before building and shipping the enclave.
  *
  * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
  *
@@ -31,11 +33,6 @@
 using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
-
-void sample_log_listener(att_log_source source, att_log_level level, const char* message)
-{
-    std::cout << "[LOG] " << message << std::endl;
-}
 
 // Creates an enclave based on the vbsenclave.dll compiled in the enclave/ diretory.
 HRESULT create_enclave(LPVOID* enclave_base)

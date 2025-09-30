@@ -90,6 +90,11 @@ wil::unique_ncrypt_key create_key(PCWSTR providerName, const wstring& keyName, D
     return key;
 }
 
+void sample_log_listener(att_log_source source, att_log_level level, const char* message)
+{
+    std::cout << "[LOG] " << message << std::endl;
+}
+
 std::string get_env_var(const std::string& env)
 {
     // Get length of env value.

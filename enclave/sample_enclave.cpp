@@ -14,9 +14,13 @@
  * Development Guide for more details: https://learn.microsoft.com/en-us/windows/win32/trusted-execution/vbs-enclaves-dev-guide
  */
 
-#include "precomp.h"
+#include <winenclave.h>
+#include <wchar.h>
+
 #include "att_manager_api_enclave.h"
 
+
+ // DllMain is the mandatory enclave entry point.
 BOOL WINAPI DllMain(HINSTANCE hInstance,
     ULONG     ulReason,
     LPVOID    Reserved)
@@ -38,13 +42,7 @@ extern "C"
 
     __declspec(dllexport) LPVOID WINAPI sample_att_enclave_create_session(LPVOID param)
     {
-        // any payload you want to put in the report which will get signed.
-        att_enclave_property properties[1]{};
-        properties[0].name = "sample_enclave_property";
-        properties[0].value_type = ATT_ENCLAVE_PROPERTY_TYPE_STRING;
-        properties[0].string_value = "sample_enclave_string";
-
-        return att_enclave_create_session(param, properties, 1, 0);
+        return att_enclave_create_session(param, nullptr, 0, 0);
     }
 
     __declspec(dllexport) LPVOID WINAPI sample_att_enclave_attest(LPVOID param)

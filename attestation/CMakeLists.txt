@@ -1,10 +1,6 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # SPDX-License-Identifier: MIT
 
-set(CMAKE_SYSTEM_VERSION 10.0)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
-
 set(ATTEST_PACKAGE_DIR "${CMAKE_BINARY_DIR}/packages/Microsoft.Attestation.Client" CACHE STRING "")
 
 macro (define_sample samplename)
@@ -38,22 +34,8 @@ define_sample(sample_boot_att)
 define_sample(sample_tpm_key_att)
 define_sample(sample_enclave_att)
 
-if (WIN32)
-    target_precompile_headers(
-        attestation-sample_enclave_att
-        PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/precomp.h"
-        )
-endif()
-
 target_link_libraries(
     attestation-sample_enclave_att
     PRIVATE
     onecore.lib
-    )
-
-target_include_directories(
-    attestation-sample_enclave_att
-    PRIVATE
-    "${CMAKE_SOURCE_DIR}/wil/include/"
     )

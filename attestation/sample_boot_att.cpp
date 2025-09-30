@@ -33,11 +33,6 @@ using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
 
-void sample_log_listener(att_log_source source, att_log_level level, const char* message)
-{
-    std::cout << "[LOG] " << message << std::endl;
-}
-
 int main()
 {
     att_set_log_listener(sample_log_listener);
