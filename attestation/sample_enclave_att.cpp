@@ -56,7 +56,6 @@ HRESULT create_enclave(LPVOID* enclave_base)
 
     RETURN_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(*enclave_base, L"vbsenclave.dll"));
 
-
     ENCLAVE_INIT_INFO_VBS init_info =
     {
         sizeof(init_info),   // length
@@ -102,6 +101,7 @@ int __cdecl wmain(int, wchar_t* [])
 {
     att_set_log_listener(sample_log_listener);
     att_set_log_level(att_log_level_telemetry);
+
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
 
