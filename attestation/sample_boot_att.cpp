@@ -46,10 +46,10 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto ephemeral_key = create_ephemeral_key();
+        auto ephemeral_software_key = create_ephemeral_software_key();
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_NCRYPT(ephemeral_key.get());
+        att_tpm_key key = ATT_TPM_KEY_NCRYPT(ephemeral_software_key.get());
 
         att_session_params_tpm params
         {

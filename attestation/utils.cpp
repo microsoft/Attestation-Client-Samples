@@ -40,11 +40,11 @@ wil::unique_ncrypt_key create_tpm_key(const wstring& name, bool machine_key)
     return tpm_key;
 }
 
-wil::unique_ncrypt_key create_ephemeral_key()
+wil::unique_ncrypt_key create_ephemeral_software_key()
 {
-    cout << "Creating ephemeral key...";
+    cout << "Creating ephemeral software key...";
 
-    wil::unique_ncrypt_key ephemeral_key = create_key(
+    wil::unique_ncrypt_key ephemeral_software_key = create_key(
         MS_KEY_STORAGE_PROVIDER,
         L"",
         0,
@@ -53,7 +53,7 @@ wil::unique_ncrypt_key create_ephemeral_key()
 
     cout << " Done." << endl; 
     
-    return ephemeral_key;
+    return ephemeral_software_key;
 }
 
 wil::unique_ncrypt_key create_key(PCWSTR providerName, const wstring& keyName, DWORD flags, bool finalize)

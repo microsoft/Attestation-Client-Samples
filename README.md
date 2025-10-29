@@ -6,18 +6,18 @@ These code samples show how attestation can be performed using the TPM. Addition
 
 ### **Boot attestation (sample_boot_att.exe)**
 
-This sample provides the code implementation to perform boot attestation, and retrieve an attestation token from Microsoft Azure Attestation.
+This sample provides the code implementation to perform boot attestation and retrieve an attestation token from Microsoft Azure Attestation.
 
 ### **TPM key attestation (sample_tpm_key_att.exe)**
 
-This sample provides the code implementation to perform boot and TPM key attestation, and retrieve an attestation token from Microsoft Azure Attestation.
+This sample provides the code implementation to perform boot and TPM key attestation and retrieve an attestation token from Microsoft Azure Attestation.
 This sample creates a TPM key named "att_sample_key" which is attested by Microsoft Azure Attestation. The creation of a TPM key may take up to a few minutes depending on the TPM hardware.
 
 ### **VBS enclave attestation (sample_enclave_att.exe)**
 
-This sample provides the code implementation to perform VBS enclave attestation, and retrieve an attestation token from Microsoft Azure Attestation.
-An enclave dll must be created and signed before the enclave host sample is run. A sample enclave is provided in the "enclave" directory. It is compiled into vbsenclave.dll,
-which is loaded and called by the enclave sample.
+This sample provides the code implementation to perform VBS enclave attestation and retrieve an attestation token from Microsoft Azure Attestation. A sample enclave is provided in the "enclave" directory. 
+It is compiled into vbsenclave.dll, which is loaded and called by the enclave attestation sample. The enclave DLL must be signed before the enclave host (sample_enclave_att) is run. 
+The sample must be run with Virtualization-Based Security enabled on the device. Please see the VBS Enclaves Development Guide for more information on how to create and sign VBS enclaves: https://learn.microsoft.com/en-us/windows/win32/trusted-execution/vbs-enclaves-dev-guide.
 
 ## Sample Requirements
 
