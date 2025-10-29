@@ -16,7 +16,7 @@ wil::unique_ncrypt_key load_tpm_key(const std::wstring& name, bool machine_key);
 // Creates a 2048-bit RSA key in the TPM using the Platform Key Storage Provider.
 wil::unique_ncrypt_key create_tpm_key(const std::wstring& name, bool machine_key);
 
-// Creates an ephemeral software key.
+// Creates a 2048-bit ephemeral software key using the Software Key Storage Provider.
 wil::unique_ncrypt_key create_ephemeral_key();
 
 // Creates a 2048-bit RSA key

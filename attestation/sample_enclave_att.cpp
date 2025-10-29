@@ -13,6 +13,7 @@
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
  * 
  * @remark You must customize the enclave image configuration in enclave/enclave.c before building and shipping the enclave.
+ * Additionally, you must customize the enclave flags, owner ID, and thread count in the create_enclave() function below before building and shipping the enclave.
  *
  * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
  *
@@ -39,8 +40,8 @@ HRESULT create_enclave(LPVOID* enclave_base)
 {
     ENCLAVE_CREATE_INFO_VBS create_info =
     {
-        0,
-        { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }
+        0,                                                                          // flags
+        { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }  // owner ID
     };
 
     *enclave_base = CreateEnclave(GetCurrentProcess(),
