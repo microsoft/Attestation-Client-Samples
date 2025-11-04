@@ -9,12 +9,6 @@ set(SOURCE_FILES
 add_library(vbsenclave SHARED ${SOURCE_FILES})
 
 target_include_directories(vbsenclave PRIVATE
-    "$ENV{VCToolsInstallDir}include"
-    "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}ucrt"
-    "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}um"
-    "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}shared"
-    "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}winrt"
-    "$ENV{WindowsSdkDir}Include/$ENV{WindowsSDKVersion}cppwinrt"
     "${ATTEST_PACKAGE_DIR}/inc"
 )
 
@@ -37,7 +31,7 @@ target_link_options(vbsenclave PRIVATE
 )
 
 add_custom_command(TARGET vbsenclave POST_BUILD
-    COMMAND "$ENV{WindowsSdkVerBinPath}$ENV{VSCMD_ARG_HOST_ARCH}/veiid.exe" "${CMAKE_BINARY_DIR}/attestation/vbsenclave.dll"
+    COMMAND "$ENV{WindowsSdkVerBinPath}$ENV{VSCMD_ARG_HOST_ARCH}/veiid.exe" "$<TARGET_FILE:vbsenclave>" 
     COMMENT "Applying VEIID Protection"
 )
 
@@ -48,3 +42,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
     set (CMAKE_SHARED_LINKER_FLAGS_DEBUG "/DEBUG /INCREMENTAL:NO" CACHE STRING "Overriding default debug ${flag_type} linker flags." FORCE)
 endif()
+
+ install(TARGETS vbsenclave DESTINATION "${CMAKE_BINARY_DIR}/attestation")
+ install(FILES $<TARGET_PDB_FILE:vbsenclave> DESTINATION "${CMAKE_BINARY_DIR}/attestation" OPTIONAL)

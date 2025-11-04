@@ -35,7 +35,7 @@ using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
 
-// Creates an enclave based on the vbsenclave.dll compiled in the enclave/ diretory.
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave diretory.
 HRESULT create_enclave(LPVOID* enclave_base)
 {
     ENCLAVE_CREATE_INFO_VBS create_info =
@@ -55,7 +55,21 @@ HRESULT create_enclave(LPVOID* enclave_base)
 
     RETURN_LAST_ERROR_IF_NULL(*enclave_base);
 
-    RETURN_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(*enclave_base, L"vbsenclave.dll"));
+    auto cleanup = wil::scope_exit([&]
+        {
+            LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
+            LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
+        });
+    
+    {
+        DWORD previous_mode = GetThreadErrorMode();
+        SetThreadErrorMode(previous_mode | SEM_FAILCRITICALERRORS, nullptr);
+        auto restore_error_mode = wil::scope_exit([&]
+            {
+                SetThreadErrorMode(previous_mode, nullptr);
+            });
+        RETURN_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(*enclave_base, L"vbsenclave.dll"));
+    }
 
     ENCLAVE_INIT_INFO_VBS init_info =
     {
@@ -72,36 +86,31 @@ HRESULT create_enclave(LPVOID* enclave_base)
     return S_OK;
 }
 
-void log_and_exit_if_failed(HRESULT hr, LPCSTR message)
+void log_and_exit_if_failed(HRESULT hr, const string& message)
 {
     if (FAILED(hr))
     {
-        cout << message << endl << "HRESULT: " << hr << endl;
+        cout << message << "HRESULT: " << hr << endl;
         exit(hr);
     }
 }
 
-void log_and_exit_if_null(LPENCLAVE_ROUTINE proc, LPCSTR message)
+// Returns a function pointer to the address of the specified function within the enclave.
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID att_enclave_base)
 {
-
-    if (proc == nullptr)
+    LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(att_enclave_base), proc_name));
+    if (proc_name == nullptr)
     {
         log_and_exit_if_failed(HRESULT_FROM_WIN32(GetLastError()), "GetProcAddress failed");
     }
-}
-
-// Returns a function pointer to the address of the specified function within the enclave.
-LPENCLAVE_ROUTINE load_enclave_export(LPCSTR procName, LPVOID att_enclave_base)
-{
-    LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(att_enclave_base), procName));
-    log_and_exit_if_null(function, procName);
     return function;
 }
 
-int __cdecl wmain(int, wchar_t* [])
+int main()
 {
+    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
+    att_set_log_level(att_log_level_none);
     att_set_log_listener(sample_log_listener);
-    att_set_log_level(att_log_level_telemetry);
 
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
@@ -109,7 +118,7 @@ int __cdecl wmain(int, wchar_t* [])
     // TODO: Use relying party's per-session nonce below.
     vector<uint8_t> rp_nonce{ 'R', 'E','P','L','A','C','E',' ','W','I','T','H', ' ','R','P', ' ','N','O','N','C','E' };
 
-    LPVOID enclave_base = nullptr;
+    LPVOID enclave_base{};
     log_and_exit_if_failed(create_enclave(&enclave_base), "create_enclave failed.");
 
     try

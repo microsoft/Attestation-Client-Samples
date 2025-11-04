@@ -6,17 +6,16 @@
  * @brief The sample enclave image configuration.
 
  * @remark You must personalize the following fields before building and shipping the enclave:
- * - Enclave family ID: A unique identifier that groups related enclave images.
- * - Enclave image ID: A unique identifier for this specific enclave image.
- * - Version: The version number of the enclave image.
- * - SVN: Security Version Number. Indicates the security update level of the enclave image.
- * - Number of threads: The maximum number of concurrent threads the enclave supports.
+ * - Enclave family ID
+ * - Enclave image ID
+ * - Version
+ * - SVN
+ * - Number of threads
  *
  * Please see https://learn.microsoft.com/en-us/windows/win32/trusted-execution/vbs-enclaves-dev-guide for more details.
  */
 
 #include <winenclave.h>
-#include <wchar.h>
 
 // VBS enclave configuration
 

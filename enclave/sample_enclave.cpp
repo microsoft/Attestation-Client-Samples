@@ -15,8 +15,6 @@
  */
 
 #include <winenclave.h>
-#include <wchar.h>
-
 #include "att_manager_api_enclave.h"
 
 
@@ -34,7 +32,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstance,
 
 extern "C"
 {
-
     __declspec(dllexport) LPVOID WINAPI sample_att_enclave_configure(LPVOID param)
     {
         return att_enclave_configure(param, ATT_ENCLAVE_CONFIG_FLAGS_NONE);
