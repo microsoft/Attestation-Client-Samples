@@ -18,7 +18,6 @@
 #include <winenclave.h>
 
 // VBS enclave configuration
-
 const IMAGE_ENCLAVE_CONFIG __enclave_config = {
     sizeof(IMAGE_ENCLAVE_CONFIG),
     IMAGE_ENCLAVE_MINIMUM_CONFIG_SIZE,

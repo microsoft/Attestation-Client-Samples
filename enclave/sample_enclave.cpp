@@ -17,7 +17,6 @@
 #include <winenclave.h>
 #include "att_manager_api_enclave.h"
 
-
  // DllMain is the mandatory enclave entry point.
 BOOL WINAPI DllMain(HINSTANCE hInstance,
     ULONG     ulReason,
