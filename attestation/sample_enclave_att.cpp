@@ -35,76 +35,11 @@ using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
 
-// Creates an enclave based on the vbsenclave.dll compiled in the enclave diretory.
-HRESULT create_enclave(LPVOID* enclave_base)
-{
-    ENCLAVE_CREATE_INFO_VBS create_info =
-    {
-        0,                                                                          // flags
-        { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }  // owner ID
-    };
-
-    *enclave_base = CreateEnclave(GetCurrentProcess(),
-        0,
-        0x10000000,
-        0,
-        ENCLAVE_TYPE_VBS,
-        &create_info,
-        sizeof(create_info),
-        nullptr);
-
-    RETURN_LAST_ERROR_IF_NULL(*enclave_base);
-
-    auto cleanup = wil::scope_exit([&]
-        {
-            LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
-            LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
-        });
-    
-    {
-        DWORD previous_mode = GetThreadErrorMode();
-        SetThreadErrorMode(previous_mode | SEM_FAILCRITICALERRORS, nullptr);
-        auto restore_error_mode = wil::scope_exit([&]
-            {
-                SetThreadErrorMode(previous_mode, nullptr);
-            });
-        RETURN_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(*enclave_base, L"vbsenclave.dll"));
-    }
-
-    ENCLAVE_INIT_INFO_VBS init_info =
-    {
-        sizeof(init_info),   // length
-        1                    // thread_count
-    };
-
-    RETURN_IF_WIN32_BOOL_FALSE(InitializeEnclave(GetCurrentProcess(),
-        *enclave_base,
-        &init_info,
-        init_info.Length,
-        nullptr));
-
-    return S_OK;
-}
-
-void log_and_exit_if_failed(HRESULT hr, const string& message)
-{
-    if (FAILED(hr))
-    {
-        cout << message << "HRESULT: " << hr << endl;
-        exit(hr);
-    }
-}
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave directory.
+LPVOID create_enclave();
 
 // Returns a function pointer to the address of the specified function within the enclave.
-LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID att_enclave_base)
-{
-    LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(att_enclave_base), proc_name));
-    if (proc_name == nullptr)
-    {
-        log_and_exit_if_failed(HRESULT_FROM_WIN32(GetLastError()), "GetProcAddress failed");
-    }
-    return function;
-}
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base);
 
 int main()
 {
@@ -118,11 +53,22 @@ int main()
     // TODO: Use relying party's per-session nonce below.
     vector<uint8_t> rp_nonce{ 'R', 'E','P','L','A','C','E',' ','W','I','T','H', ' ','R','P', ' ','N','O','N','C','E' };
 
-    LPVOID enclave_base{};
-    log_and_exit_if_failed(create_enclave(&enclave_base), "create_enclave failed.");
-
     try
     {
+        LPVOID enclave_base = { create_enclave() };
+
+        if (!enclave_base)
+        {
+			cout << "Failed to create enclave." << endl;
+            return 1;
+        }
+
+        auto cleanup = wil::scope_exit([&]
+            {
+                LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
+                LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
+            });
+
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
         auto ephemeral_software_key = create_ephemeral_software_key();
 
@@ -138,7 +84,7 @@ int main()
         };
 
         att_session_params_enclave params
-        {
+{
             rp_nonce.data(),                      // relying_party_nonce
             rp_nonce.size(),                      // relying_party_nonce_size
             rp_id.c_str(),                        // relying_party_unique_id
@@ -158,4 +104,67 @@ int main()
     }
 
     return 0;
+}
+
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave directory.
+LPVOID create_enclave()
+{
+	// Customize the enclave flags and owner ID as needed for your application.
+    ENCLAVE_CREATE_INFO_VBS create_info =
+    {
+        0,                                                                          // flags
+        { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }  // owner ID
+    };
+
+    LPVOID enclave_base = CreateEnclave(GetCurrentProcess(),
+        0,
+        0x10000000,
+        0,
+        ENCLAVE_TYPE_VBS,
+        &create_info,
+        sizeof(create_info),
+        nullptr);
+
+    THROW_LAST_ERROR_IF_NULL(enclave_base);
+    
+    {
+        DWORD previous_mode = GetThreadErrorMode();
+        SetThreadErrorMode(previous_mode | SEM_FAILCRITICALERRORS, nullptr);
+        auto restore_error_mode = wil::scope_exit([&]
+            {
+                SetThreadErrorMode(previous_mode, nullptr);
+            });
+        THROW_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(enclave_base, L"vbsenclave.dll"));
+    }
+
+    // Customize the enclave length and thread count as needed for your application.
+    ENCLAVE_INIT_INFO_VBS init_info =
+    {
+        sizeof(init_info),   // length
+        1                    // thread_count
+    };
+
+    THROW_IF_WIN32_BOOL_FALSE(InitializeEnclave(GetCurrentProcess(),
+        enclave_base,
+        &init_info,
+        init_info.Length,
+        nullptr));
+
+    return enclave_base;
+}
+
+// Returns a function pointer to the address of the specified function within the enclave.
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base)
+{
+    LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(enclave_base), proc_name));
+    if (function == nullptr)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        if (FAILED(hr))
+        {
+            cout << "GetProcAddress failed" << " HRESULT: " << hr << endl;
+            exit(hr);
+        };
+    }
+    return function;
 }

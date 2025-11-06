@@ -88,12 +88,7 @@ wil::unique_ncrypt_key create_ephemeral_software_key()
 
 void sample_log_listener(att_log_source source, att_log_level level, const char* message)
 {
-    att_log_level current_level = att_get_log_level();
-
-    if (current_level >= level)
-    {
-        std::cout << "[LOG] " << message << std::endl;
-    }
+    std::cout << "[LOG] " << message << std::endl;
 }
 
 std::string get_env_var(const std::string& env)
