@@ -53,9 +53,9 @@ int main()
     // TODO: Use relying party's per-session nonce below.
     vector<uint8_t> rp_nonce{ 'R', 'E','P','L','A','C','E',' ','W','I','T','H', ' ','R','P', ' ','N','O','N','C','E' };
 
-    try
+try
     {
-        LPVOID enclave_base = { create_enclave() };
+    LPVOID enclave_base = { create_enclave() };
 
         if (!enclave_base)
         {
@@ -63,11 +63,11 @@ int main()
             return 1;
         }
 
-        auto cleanup = wil::scope_exit([&]
-            {
-                LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
-                LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
-            });
+    auto cleanup = wil::scope_exit([&]
+        {
+            LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
+            LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
+        });
 
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
         auto ephemeral_software_key = create_ephemeral_software_key();
@@ -84,7 +84,7 @@ int main()
         };
 
         att_session_params_enclave params
-{
+        {
             rp_nonce.data(),                      // relying_party_nonce
             rp_nonce.size(),                      // relying_party_nonce_size
             rp_id.c_str(),                        // relying_party_unique_id
@@ -116,9 +116,10 @@ LPVOID create_enclave()
         { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }  // owner ID
     };
 
+    // Customize the enclave parameters as needed for your application.
     LPVOID enclave_base = CreateEnclave(GetCurrentProcess(),
         0,
-        0x10000000,
+        0x10000000, // Enclave size MUST match configuration in enclave.c.
         0,
         ENCLAVE_TYPE_VBS,
         &create_info,
@@ -126,7 +127,7 @@ LPVOID create_enclave()
         nullptr);
 
     THROW_LAST_ERROR_IF_NULL(enclave_base);
-    
+
     {
         DWORD previous_mode = GetThreadErrorMode();
         SetThreadErrorMode(previous_mode | SEM_FAILCRITICALERRORS, nullptr);
@@ -135,7 +136,7 @@ LPVOID create_enclave()
                 SetThreadErrorMode(previous_mode, nullptr);
             });
         THROW_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(enclave_base, L"vbsenclave.dll"));
-    }
+   }
 
     // Customize the enclave length and thread count as needed for your application.
     ENCLAVE_INIT_INFO_VBS init_info =
