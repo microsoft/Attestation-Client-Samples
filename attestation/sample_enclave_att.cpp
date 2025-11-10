@@ -55,7 +55,7 @@ int main()
 
     try
     {
-    LPVOID enclave_base = { create_enclave() };
+        LPVOID enclave_base = { create_enclave() };
 
         if (!enclave_base)
         {
@@ -63,7 +63,7 @@ int main()
             return 1;
         }
 
-    auto cleanup = wil::scope_exit([&]
+        auto cleanup = wil::scope_exit([&]
         {
             LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
             LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
