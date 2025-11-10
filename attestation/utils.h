@@ -25,4 +25,10 @@ void sample_log_listener(att_log_source source, att_log_level level, const char*
 // Returns the value of an environment variable.
 std::string get_env_var(const std::string& env);
 
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave directory.
+LPVOID create_enclave();
+
+// Returns a function pointer to the address of the specified function within the enclave.
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base);
+
 #endif // _ATT_SAMPLES_UTILS_H

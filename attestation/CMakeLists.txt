@@ -21,7 +21,7 @@ macro (define_sample samplename)
 
     find_package(azure-identity-cpp CONFIG REQUIRED)
     find_package(azure-security-attestation-cpp CONFIG REQUIRED)
-    target_link_libraries(attestation-${samplename} PRIVATE "${ATTEST_PACKAGE_DIR}/lib/azure-attest-manager.lib" Azure::azure-identity Azure::azure-security-attestation)
+    target_link_libraries(attestation-${samplename} PRIVATE "${ATTEST_PACKAGE_DIR}/lib/azure-attest-manager.lib" Azure::azure-identity Azure::azure-security-attestation onecore.lib)
 
     install(
         FILES "${ATTEST_PACKAGE_DIR}/bin/azure-attest-manager.dll" "${ATTEST_PACKAGE_DIR}/bin/AzureAttestManager.dll" "${ATTEST_PACKAGE_DIR}/bin/AzureAttestNormal.dll" "${ATTEST_PACKAGE_DIR}/bin/AzureAttest.dll"
@@ -33,9 +33,3 @@ endmacro()
 define_sample(sample_boot_att)
 define_sample(sample_tpm_key_att)
 define_sample(sample_enclave_att)
-
-target_link_libraries(
-    attestation-sample_enclave_att
-    PRIVATE
-    onecore.lib
-    )
