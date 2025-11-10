@@ -53,7 +53,7 @@ int main()
     // TODO: Use relying party's per-session nonce below.
     vector<uint8_t> rp_nonce{ 'R', 'E','P','L','A','C','E',' ','W','I','T','H', ' ','R','P', ' ','N','O','N','C','E' };
 
-try
+    try
     {
     LPVOID enclave_base = { create_enclave() };
 
