@@ -29,7 +29,6 @@
 #include <vector>
 
 #include <att_manager.h>
-#include <att_manager_logger.h>
 
 using namespace std;
 
@@ -37,10 +36,6 @@ using namespace std;
 
 int main()
 {
-    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
-    att_set_log_level(att_log_level_none);
-    att_set_log_listener(sample_log_listener);
-
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
 
