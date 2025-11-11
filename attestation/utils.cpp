@@ -155,7 +155,6 @@ LPVOID create_enclave()
     return enclave_base;
 }
 
-
 LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base)
 {
     LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(enclave_base), proc_name));
