@@ -86,6 +86,11 @@ wil::unique_ncrypt_key create_ephemeral_software_key()
     return ephemeral_software_key;
 }
 
+void sample_log_listener(att_log_source source, att_log_level level, const char* message)
+{
+    std::cout << "[LOG] " << message << std::endl;
+}
+
 std::string get_env_var(const std::string& env)
 {
     // Get length of env value.
