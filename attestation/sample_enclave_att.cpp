@@ -53,7 +53,7 @@ int main()
 
         if (!enclave_base)
         {
-			cout << "Failed to create enclave." << endl;
+            cout << "Failed to create enclave." << endl;
             return 1;
         }
 

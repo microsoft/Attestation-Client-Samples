@@ -24,7 +24,7 @@ wil::unique_ncrypt_key load_tpm_key(const wstring& name, bool machine_key)
     return tpm_key;
 }
 
-static wil::unique_ncrypt_key create_key(PCWSTR provider_name, PCWSTR key_name, DWORD flags)
+wil::unique_ncrypt_key create_key(PCWSTR provider_name, PCWSTR key_name, DWORD flags)
 {
     wil::unique_ncrypt_prov provider_handle{};
     THROW_IF_FAILED_MSG(NCryptOpenStorageProvider(
