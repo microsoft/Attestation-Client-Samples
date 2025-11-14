@@ -35,7 +35,7 @@ using namespace std;
 
 int main()
 {
-    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
+    // Adjust log level to your desired level of output. 
     att_set_log_level(att_log_level_none);
     att_set_log_listener(sample_log_listener);
 

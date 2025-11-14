@@ -21,7 +21,7 @@
 const IMAGE_ENCLAVE_CONFIG __enclave_config = {
     sizeof(IMAGE_ENCLAVE_CONFIG),
     IMAGE_ENCLAVE_MINIMUM_CONFIG_SIZE,
-    0, 			       // change to IMAGE_ENCLAVE_POLICY_DEBUGGABLE if you require a debuggable enclave.
+    0, // change to IMAGE_ENCLAVE_POLICY_DEBUGGABLE if you require a debuggable enclave.
     0,
     0,
     0,

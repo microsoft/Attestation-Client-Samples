@@ -1,3 +1,4 @@
+//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //
 
@@ -35,15 +36,20 @@ using namespace std;
 
 #define AIK_NAME L"att_sample_aik"
 
+// Creates an enclave based on the vbsenclave.dll compiled in the enclave directory.
+LPVOID create_enclave();
+
+// Returns a function pointer to the address of the specified function within the enclave.
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base);
+
 int main()
 {
-    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
+    // Adjust log level to your desired level of output. 
     att_set_log_level(att_log_level_none);
     att_set_log_listener(sample_log_listener);
 
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
-
     // TODO: Use relying party's per-session nonce below.
     vector<uint8_t> rp_nonce{ 'R', 'E','P','L','A','C','E',' ','W','I','T','H', ' ','R','P', ' ','N','O','N','C','E' };
 
@@ -98,4 +104,58 @@ int main()
     }
 
     return 0;
+}
+
+LPVOID create_enclave()
+{
+    // Customize the enclave flags and owner ID as needed for your application.
+    ENCLAVE_CREATE_INFO_VBS create_info =
+    {
+        0,                                                                          // flags
+        { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }  // owner ID
+    };
+
+    // Customize the enclave parameters as needed for your application.
+    // Enclave size MUST match configuration in enclave.c. 
+    LPVOID enclave_base = CreateEnclave(GetCurrentProcess(), 0, 0x10000000, 0, ENCLAVE_TYPE_VBS, &create_info, sizeof(create_info), nullptr);
+
+    THROW_LAST_ERROR_IF_NULL_MSG(enclave_base, "CreateEnclave failed: unable to create enclave.");
+
+    auto enclave_cleanup = wil::scope_exit([&]
+    {
+        if (enclave_base)
+        {
+            LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
+            LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
+        }
+    });
+
+    {
+        DWORD previous_mode = GetThreadErrorMode();
+        SetThreadErrorMode(previous_mode | SEM_FAILCRITICALERRORS, nullptr);
+        auto restore_error_mode = wil::scope_exit([&]
+            {
+                SetThreadErrorMode(previous_mode, nullptr);
+            });
+        THROW_IF_WIN32_BOOL_FALSE(LoadEnclaveImageW(enclave_base, L"vbsenclave.dll"));
+    }
+
+    // Customize the enclave length and thread count as needed for your application.
+    ENCLAVE_INIT_INFO_VBS init_info =
+    {
+        sizeof(init_info),   // length
+        1                    // thread_count
+    };
+
+    THROW_IF_WIN32_BOOL_FALSE(InitializeEnclave(GetCurrentProcess(), enclave_base, &init_info, init_info.Length, nullptr));
+
+    enclave_cleanup.release();
+    return enclave_base;
+}
+
+LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base)
+{
+    LPENCLAVE_ROUTINE function = reinterpret_cast<LPENCLAVE_ROUTINE>(GetProcAddress(reinterpret_cast<HMODULE>(enclave_base), proc_name));
+    THROW_LAST_ERROR_IF_NULL_MSG(function, "GetProcAddress failed to load enclave export.");
+    return function;
 }

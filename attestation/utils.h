@@ -14,21 +14,15 @@
 wil::unique_ncrypt_key load_tpm_key(const std::wstring& name, bool machine_key);
 
 // Creates a 2048-bit RSA key in the TPM using the Platform Key Storage Provider.
-wil::unique_ncrypt_key create_tpm_key(const PCWSTR& name, bool machine_key);
+wil::unique_ncrypt_key create_tpm_key(const std::wstring& name, bool machine_key);
 
 // Creates a 2048-bit ephemeral software key using the Software Key Storage Provider.
 wil::unique_ncrypt_key create_ephemeral_software_key();
 
 // Creates a sample log listener to enable logging from the MAA SDK.
-void sample_log_listener(att_log_source source, att_log_level level, const char* message);
+void sample_log_listener(att_log_source, att_log_level, const char* message);
 
 // Returns the value of an environment variable.
 std::string get_env_var(const std::string& env);
-
-// Creates an enclave based on the vbsenclave.dll compiled in the enclave directory.
-LPVOID create_enclave();
-
-// Returns a function pointer to the address of the specified function within the enclave.
-LPENCLAVE_ROUTINE load_enclave_export(LPCSTR proc_name, LPVOID enclave_base);
 
 #endif // _ATT_SAMPLES_UTILS_H
