@@ -40,7 +40,7 @@ wil::unique_ncrypt_key create_key(PCWSTR provider_name, PCWSTR key_name, DWORD f
     return key;
 }
 
-wil::unique_ncrypt_key create_tpm_key(const std::wstring& name, bool machine_key)
+wil::unique_ncrypt_key create_tpm_key(const wstring& name, bool machine_key)
 {
     cout << "Creating TPM key...";
 
@@ -64,23 +64,23 @@ wil::unique_ncrypt_key create_ephemeral_software_key()
 
 void sample_log_listener(att_log_source, att_log_level, const char* message)
 {
-    std::cout << "[LOG] " << message << std::endl;
+    cout << "[LOG] " << message << endl;
 }
 
-std::string get_env_var(const std::string& env)
+string get_env_var(const string& env)
 {
     // Get length of env value.
     size_t len = 0;
     if (getenv_s(&len, nullptr, 0, env.c_str()) || len == 0)
     {
-        throw std::runtime_error("Could not find environment variable: '" + std::string(env) + "'");
+        throw runtime_error("Could not find environment variable: '" + string(env) + "'");
     }
 
     // Allocate using a string and get the value.
-    std::string val(len, 0);
+    string val(len, 0);
     if (getenv_s(&len, val.data(), val.size(), env.c_str()) || len == 0)
     {
-        throw std::runtime_error("Could not read environment variable: '" + std::string(env) + "'");
+        throw runtime_error("Could not read environment variable: '" + string(env) + "'");
     }
 
     // Remove last character of the string as getenv_s() stores null terminator.

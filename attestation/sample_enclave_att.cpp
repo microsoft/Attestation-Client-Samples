@@ -123,11 +123,8 @@ LPVOID create_enclave()
 
     auto enclave_cleanup = wil::scope_exit([&]
     {
-        if (enclave_base)
-        {
-            LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
-            LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
-        }
+        LOG_IF_WIN32_BOOL_FALSE(TerminateEnclave(enclave_base, TRUE));
+        LOG_IF_WIN32_BOOL_FALSE(DeleteEnclave(enclave_base));
     });
 
     {
@@ -149,7 +146,10 @@ LPVOID create_enclave()
 
     THROW_IF_WIN32_BOOL_FALSE(InitializeEnclave(GetCurrentProcess(), enclave_base, &init_info, init_info.Length, nullptr));
 
+    // Successfully created and initialized enclave
+    // Release the failure guard so caller owns cleanup.
     enclave_cleanup.release();
+
     return enclave_base;
 }
 
