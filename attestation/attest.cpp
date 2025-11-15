@@ -67,12 +67,12 @@ vector<uint8_t> send_to_att_service(const uint8_t* data, size_t size)
     }
 }
 
-void attest(const att_session_params_tpm& params, const string& file_name)
+void attest(const char* session_type, const void* params, const string& file_name)
 {
     cout << "Starting attestation..." << endl;
 
     att_session session{};
-    exit_if_failed(att_create_session(ATT_SESSION_TYPE_TPM, &params, &session), "att_create_session");
+    exit_if_failed(att_create_session(session_type, params, &session), "att_create_session");
 
     bool complete = false;
     vector<uint8_t> received_from_server{};

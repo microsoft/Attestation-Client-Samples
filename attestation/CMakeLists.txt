@@ -1,11 +1,9 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required (VERSION 3.12)
-
 set(ATTEST_PACKAGE_DIR "${CMAKE_BINARY_DIR}/packages/Microsoft.Attestation.Client" CACHE STRING "")
 
-macro (define_sample samplename)
+macro (define_sample samplename is_enclave)
 
     project(attestation-${samplename})
 
@@ -29,8 +27,17 @@ macro (define_sample samplename)
         FILES "${ATTEST_PACKAGE_DIR}/bin/azure-attest-manager.dll" "${ATTEST_PACKAGE_DIR}/bin/AzureAttestManager.dll" "${ATTEST_PACKAGE_DIR}/bin/AzureAttestNormal.dll"
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     )
+  
+    if("${is_enclave}" STREQUAL "TRUE")
+        target_link_libraries(attestation-${samplename} PRIVATE onecore.lib)
 
+        install(
+            FILES "${ATTEST_PACKAGE_DIR}/bin/AzureAttest.dll"
+            DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+        )
+    endif()
 endmacro()
 
-define_sample(sample_boot_att)
-define_sample(sample_tpm_key_att)
+define_sample(sample_boot_att FALSE)
+define_sample(sample_tpm_key_att FALSE)
+define_sample(sample_enclave_att TRUE)

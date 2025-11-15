@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include <att_manager.h>
+#include <att_manager_logger.h>
 
 using namespace std;
 
@@ -34,6 +35,10 @@ using namespace std;
 
 int main()
 {
+    // Adjust log level to your desired level of output. 
+    att_set_log_level(att_log_level_none);
+    att_set_log_listener(sample_log_listener);
+
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
     // TODO: Use relying party's per-session nonce below.
@@ -58,7 +63,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(params, "report_key.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_key.jwt");
     }
     catch (const std::exception& ex)
     {

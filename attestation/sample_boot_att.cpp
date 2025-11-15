@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include <att_manager.h>
+#include <att_manager_logger.h>
 
 using namespace std;
 
@@ -34,6 +35,10 @@ using namespace std;
 
 int main()
 {
+    // Adjust log level to your desired level of output. 
+    att_set_log_level(att_log_level_none);
+    att_set_log_listener(sample_log_listener);
+    
     // TODO: Use relying party's id in the line below.
     string rp_id{ "https://contoso.com" };
     // TODO: Use relying party's per-session nonce below.
@@ -42,8 +47,10 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
+        auto ephemeral_software_key = create_ephemeral_software_key();
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
+        att_tpm_key key = ATT_TPM_KEY_NCRYPT(ephemeral_software_key.get());
 
         att_session_params_tpm params
         {
@@ -51,12 +58,12 @@ int main()
             rp_nonce.size(), // relying_party_nonce_size
             rp_id.c_str(),   // relying_party_unique_id
             &aik,            // aik
-            nullptr,         // request_key
+            &key,            // request_key
             nullptr,         // other_keys
             0                // other_keys_count
         };
 
-        attest(params, "report_boot.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_boot.jwt");
     }
     catch (const std::exception& ex)
     {

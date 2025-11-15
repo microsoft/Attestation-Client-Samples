@@ -18,6 +18,6 @@ using att_session = wil::unique_any<att_session_handle, decltype(&att_close_sess
 using att_buffer = wil::unique_any<uint8_t*, decltype(&att_free_buffer), att_free_buffer>;
 
 // Performs the attestation loop.
-void attest(const att_session_params_tpm& params, const std::string& file_name);
+void attest(const char* session_type, const void* params, const std::string& file_name);
 
 #endif // _ATT_SAMPLES_ATTEST_H

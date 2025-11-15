@@ -25,10 +25,15 @@ if(NOT NUGET_EXE)
 endif()
 
 if(NOT NUGET_EXE)
-    message(FATAL "CMake could not find the nuget command line tool. Please install it from https://www.nuget.org/downloads and move it to ${CMAKE_CURRENT_SOURCE_DIR}!")
+    message(FATAL_ERROR "CMake could not find the nuget command line tool. Please install it from https://www.nuget.org/downloads and move it to ${CMAKE_CURRENT_SOURCE_DIR}!")
 else()
-    exec_program(${NUGET_EXE}
-        ARGS install "Microsoft.Attestation.Client" -Version 0.1.181 -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages)
+    execute_process(COMMAND ${NUGET_EXE} install "Microsoft.Attestation.Client" -Version 1.1.133870390-preview -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages)
+    if(NUGET_RESULT)
+        message(FATAL_ERROR "NuGet package installation failed: ${NUGET_ERROR}")
+    else()
+        message(STATUS "NuGet package installed successfully: ${NUGET_OUTPUT}")
+    endif()
 endif()
 
 add_subdirectory(attestation)
+add_subdirectory(enclave)
