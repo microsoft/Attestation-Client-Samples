@@ -62,6 +62,17 @@ wil::unique_ncrypt_key create_ephemeral_software_key()
     return ephemeral_software_key;
 }
 
+wil::unique_ncrypt_key create_key_guard_key()
+{
+    cout << "Creating VBS NCrypt (Key Guard) key...";
+
+    wil::unique_ncrypt_key key_guard_key = create_key(MS_KEY_STORAGE_PROVIDER, nullptr, NCRYPT_OVERWRITE_KEY_FLAG | NCRYPT_USE_VIRTUAL_ISOLATION_FLAG);
+    
+    cout << " Done." << endl;
+
+    return key_guard_key;
+}
+
 void sample_log_listener(att_log_source, att_log_level, const char* message)
 {
     cout << "[LOG] " << message << endl;

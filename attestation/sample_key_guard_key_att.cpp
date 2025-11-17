@@ -1,9 +1,9 @@
-﻿//
+//
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //
 
 /**
- * @brief This sample provides the code implementation to perform boot and TPM key attestation,
+ * @brief This sample provides the code implementation to perform VBS NCrypt (Key Guard) key attestation,
  * and retrieve an attestation token from Microsoft Azure Attestation.
  *
  * @remark The following environment variables must be set before running the sample.
@@ -35,7 +35,7 @@ using namespace std;
 
 int main()
 {
-    // Adjust log level to your desired level of output. 
+    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
     att_set_log_level(att_log_level_none);
     att_set_log_listener(sample_log_listener);
 
@@ -47,10 +47,10 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto tpm_key = create_tpm_key(L"att_sample_key", false);
+        auto keyguard_key = create_key_guard_key();
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_NCRYPT(tpm_key.get());
+        att_tpm_key key = ATT_TPM_KEY_VBS_NCRYPT(keyguard_key.get());
 
         att_session_params_tpm params
         {
@@ -63,7 +63,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(ATT_SESSION_TYPE_TPM, &params, "report_tpm_key.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_key_guard_key.jwt");
     }
     catch (const std::exception& ex)
     {
@@ -71,12 +71,4 @@ int main()
     }
 
     return 0;
-
-    //
-    // Notice that report will contain claim "x-ms-tpm-request-key", which includes the public part of the TPM key in the "jwk" field.
-    // In addition, field "info" will contains "tpm_certify" indicating that a TPM key was certified. The fields inside "tpm_certify" attest to the TPM key properties. Those properties 
-    // are described in Trusted Computing Group's TPM Library spec (https://trustedcomputinggroup.org/resource/tpm-library-specification/), Part 2: Structures, TPMT_PUBLIC. For example,
-    // a relying party can verify that the key's object attributes have bits fixedTPM, fixedParent and sensitiveDataOrigin set to make sure the key was generated inside the TPM and cannot
-    // be exported.
-    //
 }
