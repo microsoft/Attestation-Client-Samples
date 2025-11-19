@@ -13,10 +13,10 @@ This sample provides the code implementation to perform boot attestation and ret
 This sample provides the code implementation to perform boot and TPM key attestation and retrieve an attestation token from Microsoft Azure Attestation.
 This sample creates a TPM key named "att_sample_key" which is attested by Microsoft Azure Attestation. The creation of a TPM key may take up to a few minutes depending on the TPM hardware.
 
-### **VBS NCrypt (Key Guard) key attestation (sample_key_guard_att.exe)**
+### **VBS-Protected key attestation (sample_vbs_protected_key_att.exe)**
 
-This sample provides the code implementation to perform Key Guard attestation and retrieve an attestation token from Microsoft Azure Attestation.
-This sample creates a Key Guard key named "att_sample_key" which is attested by Microsoft Azure Attestation. The sample must be run with Virtualization-Based Security enabled on the device. 
+This sample provides the code implementation to perform VBS-Protected key attestation and retrieve an attestation token from Microsoft Azure Attestation.
+This sample creates a VBS-Protected key named "att_sample_key" which is attested by Microsoft Azure Attestation. The sample must be run with Virtualization-Based Security enabled on the device. 
 
 ### **VBS enclave attestation (sample_enclave_att.exe)**
 

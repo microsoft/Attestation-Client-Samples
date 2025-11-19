@@ -35,7 +35,7 @@ using namespace std;
 
 int main()
 {
-    // Adjust log level to your desired level of output (none, error, warning, info, or telemetry). 
+    // Adjust log level to your desired level of output. 
     att_set_log_level(att_log_level_none);
     att_set_log_listener(sample_log_listener);
 
@@ -47,10 +47,10 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto keyguard_key = create_key_guard_key();
+        auto vbs_protected_key = create_vbs_protected_key(L"att_sample_key");
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_VBS_NCRYPT(keyguard_key.get());
+        att_tpm_key key = ATT_TPM_KEY_VBS_NCRYPT(vbs_protected_key.get());
 
         att_session_params_tpm params
         {
@@ -72,3 +72,11 @@ int main()
 
     return 0;
 }
+
+//
+// Notice that report will contain claim "x-ms-tpm-request-key", which includes the public part of the TPM key in the "jwk" field.
+// In addition, field "info" will contains "vbs_ncrypt" indicating that a VBS-Protected key was certified. The fields inside "vbs_ncrypt" attest to the VBS-protected key properties. Those properties 
+// are described in Trusted Computing Group's TPM Library spec (https://trustedcomputinggroup.org/resource/tpm-library-specification/), Part 2: Structures, TPMT_PUBLIC. For example,
+// a relying party can verify that the key's object attributes have bits fixedTPM, fixedParent and sensitiveDataOrigin set to make sure the key was generated inside the TPM and cannot
+// be exported.
+//
