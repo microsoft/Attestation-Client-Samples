@@ -19,6 +19,9 @@ wil::unique_ncrypt_key create_tpm_key(const std::wstring& name, bool machine_key
 // Creates a 2048-bit ephemeral software key using the Software Key Storage Provider.
 wil::unique_ncrypt_key create_ephemeral_software_key();
 
+// Creates a 2048-bit VBS-Protected NCrypt key using the Software Key Storage Provider.
+wil::unique_ncrypt_key create_vbs_protected_key(const std::wstring& name);
+
 // Creates a sample log listener to enable logging from the MAA SDK.
 void sample_log_listener(att_log_source, att_log_level, const char* message);
 
