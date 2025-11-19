@@ -64,7 +64,7 @@ wil::unique_ncrypt_key create_ephemeral_software_key()
 
 wil::unique_ncrypt_key create_vbs_protected_key(const wstring& name)
 {
-    cout << "Creating VBS NCrypt (Key Guard) key...";
+    cout << "Creating VBS-Protected NCrypt key...";
 
     // Pass in nullptr instead of "name.cstr()" if you require an ephemeral key.
     wil::unique_ncrypt_key vbs_protected_key = create_key(MS_KEY_STORAGE_PROVIDER, name.c_str(), NCRYPT_OVERWRITE_KEY_FLAG | NCRYPT_REQUIRE_VBS_FLAG);

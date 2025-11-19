@@ -63,7 +63,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(ATT_SESSION_TYPE_TPM, &params, "report_key_guard_key.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_vbs_protected_key.jwt");
     }
     catch (const std::exception& ex)
     {
@@ -75,8 +75,5 @@ int main()
 
 //
 // Notice that report will contain claim "x-ms-tpm-request-key", which includes the public part of the TPM key in the "jwk" field.
-// In addition, field "info" will contains "vbs_ncrypt" indicating that a VBS-Protected key was certified. The fields inside "vbs_ncrypt" attest to the VBS-protected key properties. Those properties 
-// are described in Trusted Computing Group's TPM Library spec (https://trustedcomputinggroup.org/resource/tpm-library-specification/), Part 2: Structures, TPMT_PUBLIC. For example,
-// a relying party can verify that the key's object attributes have bits fixedTPM, fixedParent and sensitiveDataOrigin set to make sure the key was generated inside the TPM and cannot
-// be exported.
+// In addition, field "info" will contains "vbs_ncrypt" indicating that a VBS-Protected key was certified. The fields inside "vbs_ncrypt" attest to the VBS-protected key properties.
 //
