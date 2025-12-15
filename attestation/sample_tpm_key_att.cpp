@@ -63,7 +63,7 @@ int main()
             0                // other_keys_count
         };
 
-        attest(ATT_SESSION_TYPE_TPM, &params, "report_key.jwt");
+        attest(ATT_SESSION_TYPE_TPM, &params, "report_tpm_key.jwt");
     }
     catch (const std::exception& ex)
     {
