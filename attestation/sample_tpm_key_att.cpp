@@ -6,11 +6,8 @@
  * @brief This sample provides the code implementation to perform boot and TPM key attestation,
  * and retrieve an attestation token from Microsoft Azure Attestation.
  *
- * @remark The following environment variables must be set before running the sample.
+ * @remark The following environment variable must be set before running the sample.
  *
- * - AZURE_TENANT_ID:     Tenant ID for the Azure account. Used for authenticated calls to the attestation service.
- * - AZURE_CLIENT_ID:     The client ID to authenticate the request. Used for authenticated calls to the attestation service.
- * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
  *
  * In addition, a TPM attestation identity key named 'att_sample_aik' must be created. See README.md for instructions.
@@ -47,10 +44,16 @@ int main()
     try
     {
         auto tpm_aik = load_tpm_key(AIK_NAME, true);
-        auto tpm_key = create_tpm_key(L"att_sample_key", false);
+        auto tpm_device_key = create_tpm_key(L"att_sample_deviceKey", false);
+        auto tpm_idk = create_tpm_key(L"att_sample_IDK", false);
+        auto tpm_stk = create_tpm_key(L"att_sample_STK", false);
 
         att_tpm_aik aik = ATT_TPM_AIK_NCRYPT(tpm_aik.get());
-        att_tpm_key key = ATT_TPM_KEY_NCRYPT(tpm_key.get());
+        att_tpm_key device_key = ATT_TPM_KEY_NCRYPT(tpm_device_key.get());
+        att_tpm_key idk = ATT_TPM_KEY_NCRYPT(tpm_idk.get());
+        att_tpm_key stk = ATT_TPM_KEY_NCRYPT(tpm_stk.get());
+
+        att_tpm_key other_keys[] = { idk, stk };
 
         att_session_params_tpm params
         {
@@ -58,9 +61,9 @@ int main()
             rp_nonce.size(), // relying_party_nonce_size
             rp_id.c_str(),   // relying_party_unique_id
             &aik,            // aik
-            &key,            // request_key
-            nullptr,         // other_keys
-            0                // other_keys_count
+            &device_key,     // request_key (deviceKey)
+            other_keys,      // other_keys (IDK, STK)
+            2                // other_keys_count
         };
 
         attest(ATT_SESSION_TYPE_TPM, &params, "report_key.jwt");

@@ -6,11 +6,8 @@
  * @brief This sample provides the code implementation to perform VBS enclave attestation,
  * and retrieve an attestation token from Microsoft Azure Attestation.
  *
- * @remark The following environment variables must be set before running the sample.
+ * @remark The following environment variable must be set before running the sample.
  *
- * - AZURE_TENANT_ID:     Tenant ID for the Azure account. Used for authenticated calls to the attestation service.
- * - AZURE_CLIENT_ID:     The client ID to authenticate the request. Used for authenticated calls to the attestation service.
- * - AZURE_CLIENT_SECRET: The client secret. Used for authenticated calls to the attestation service.
  * - AZURE_MAA_URI:       Microsoft Azure Attestation provider's Attest URI (as shown in portal). Format is similar to "https://<ProviderName>.<Region>.attest.azure.net".
  * 
  * @remark You must customize the enclave image configuration in enclave/enclave.c before building and shipping the enclave.
