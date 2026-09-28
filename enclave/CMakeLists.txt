@@ -1,6 +1,30 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # SPDX-License-Identifier: MIT
 
+# Determine target architecture
+if(NOT DEFINED ENV{VSCMD_ARG_TGT_ARCH})
+    if(CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+        set(TARGET_ARCH "arm64")
+    elseif(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+        set(TARGET_ARCH "x64")
+    else()
+        set(TARGET_ARCH "x64")
+    endif()
+else()
+    set(TARGET_ARCH "$ENV{VSCMD_ARG_TGT_ARCH}")
+endif()
+
+# Determine host architecture for tools
+if(NOT DEFINED ENV{VSCMD_ARG_HOST_ARCH})
+    if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "ARM64|arm64")
+        set(HOST_ARCH "arm64")
+    else()
+        set(HOST_ARCH "x64")
+    endif()
+else()
+    set(HOST_ARCH "$ENV{VSCMD_ARG_HOST_ARCH}")
+endif()
+
 set(SOURCE_FILES
     "enclave.c"
     "sample_enclave.cpp"
@@ -9,16 +33,16 @@ set(SOURCE_FILES
 add_library(vbsenclave SHARED ${SOURCE_FILES})
 
 target_include_directories(vbsenclave PRIVATE
-    "${ATTEST_PACKAGE_DIR}/inc"
+    "${ATTEST_PACKAGE_DIR}/inc/${ATTEST_PACKAGE_ARCH}"
 )
 
 target_link_libraries(vbsenclave PRIVATE
-        "$ENV{VCToolsInstallDir}lib/$ENV{VSCMD_ARG_TGT_ARCH}/enclave/libcmt.lib"
-        "$ENV{VCToolsInstallDir}lib/$ENV{VSCMD_ARG_TGT_ARCH}/enclave/libvcruntime.lib"
-        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}um/$ENV{VSCMD_ARG_TGT_ARCH}/bcrypt.lib"
-        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}um/$ENV{VSCMD_ARG_TGT_ARCH}/vertdll.lib"
-        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}ucrt_enclave/$ENV{VSCMD_ARG_TGT_ARCH}/ucrt.lib"
-        "${ATTEST_PACKAGE_DIR}/lib/AzureAttest.lib"
+        "$ENV{VCToolsInstallDir}lib/${TARGET_ARCH}/enclave/libcmt.lib"
+        "$ENV{VCToolsInstallDir}lib/${TARGET_ARCH}/enclave/libvcruntime.lib"
+        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}um/${TARGET_ARCH}/bcrypt.lib"
+        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}um/${TARGET_ARCH}/vertdll.lib"
+        "$ENV{WindowsSdkDir}Lib/$ENV{WindowsSDKLibVersion}ucrt_enclave/${TARGET_ARCH}/ucrt.lib"
+        "${ATTEST_PACKAGE_DIR}/lib/${ATTEST_PACKAGE_ARCH}/AzureAttest.lib"
     )
 
 target_link_options(vbsenclave PRIVATE
@@ -31,7 +55,7 @@ target_link_options(vbsenclave PRIVATE
 )
 
 add_custom_command(TARGET vbsenclave POST_BUILD
-    COMMAND "$ENV{WindowsSdkVerBinPath}$ENV{VSCMD_ARG_HOST_ARCH}/veiid.exe" "$<TARGET_FILE:vbsenclave>" 
+    COMMAND "$ENV{WindowsSdkVerBinPath}${HOST_ARCH}/veiid.exe" "$<TARGET_FILE:vbsenclave>" 
     COMMENT "Applying VEIID Protection"
 )
 

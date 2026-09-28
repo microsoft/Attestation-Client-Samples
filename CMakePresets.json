@@ -36,6 +36,26 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "arm64-debug",
+      "displayName": "arm64 Debug",
+      "inherits": "windows-base",
+      "architecture": {
+        "value": "arm64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "arm64-release",
+      "displayName": "arm64 Release",
+      "inherits": "arm64-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ],
   "buildPresets": [
@@ -46,6 +66,14 @@
     {
       "name": "x64-release",
       "configurePreset": "x64-release"
+    },
+    {
+      "name": "arm64-debug",
+      "configurePreset": "arm64-debug"
+    },
+    {
+      "name": "arm64-release",
+      "configurePreset": "arm64-release"
     }
   ]
 }

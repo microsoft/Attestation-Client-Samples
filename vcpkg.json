@@ -6,5 +6,5 @@
     "azure-security-attestation-cpp",
     "wil"
   ],
-  "builtin-baseline": "6af584dd59aa5bdba75dae6781ec74614e03e5b9"
+  "builtin-baseline": "c5a15727ee70fddf0296f0d8aafc3f58916fefac"
 }
